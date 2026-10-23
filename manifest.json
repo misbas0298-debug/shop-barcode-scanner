@@ -1,0 +1,13 @@
+
+{
+  "name": "My Shop Management",
+  "short_name": "My Shop",
+  "description": "Barcode scanner, inventory and sales management for My Shop.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#166534",
+  "orientation": "portrait",
+  "lang": "en-IN"
+}
