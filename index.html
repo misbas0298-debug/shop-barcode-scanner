@@ -8,68 +8,251 @@
   <title>My Shop Barcode Scanner</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 20px;
-      background: #f5f6fa;
+      padding: 16px;
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      color: #202938;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: auto;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin: 8px 0 5px;
       text-align: center;
     }
 
-    h2 {
-      color: #222;
+    .subtitle {
+      text-align: center;
+      color: #687385;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .notice {
+      padding: 11px;
+      background: #fff3d7;
+      border-radius: 10px;
+      color: #785000;
+      font-size: 13px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .card {
+      background: white;
+      padding: 16px;
+      border-radius: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 9px rgba(0,0,0,.05);
     }
 
     .modes {
       display: flex;
       gap: 10px;
-      margin: 20px 0;
+      margin-bottom: 14px;
     }
 
     button {
-      padding: 14px;
-      font-size: 17px;
       border: none;
+      padding: 13px;
       border-radius: 10px;
-      background: #ddd;
+      font-size: 15px;
+      font-weight: 600;
       cursor: pointer;
     }
 
     .modes button {
       flex: 1;
+      background: #e6ebf2;
+      color: #344054;
     }
 
-    button.active {
-      background: #1565c0;
+    .modes button.active {
+      background: #1769c2;
       color: white;
+    }
+
+    .primary {
+      background: #1769c2;
+      color: white;
+      width: 100%;
+    }
+
+    .success {
+      background: #148653;
+      color: white;
+      width: 100%;
+    }
+
+    .secondary {
+      background: #e8edf4;
+      color: #263244;
+    }
+
+    .danger {
+      background: #fff0f0;
+      color: #b42318;
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
     }
 
     #reader {
       width: 100%;
-      max-width: 450px;
-      margin: 20px auto;
-    }
-
-    .result {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      margin-top: 20px;
-      overflow-wrap: anywhere;
+      overflow: hidden;
+      border-radius: 10px;
     }
 
     #status {
-      color: #555;
+      font-size: 13px;
+      text-align: center;
+      color: #566274;
+      line-height: 1.5;
+    }
+
+    .field {
+      margin: 12px 0;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #d6dce5;
+      border-radius: 9px;
+      background: white;
+    }
+
+    .product-name {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .details {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .detail {
+      flex: 1;
+      padding: 12px;
+      background: #f4f7fb;
+      border-radius: 10px;
+    }
+
+    .detail small {
+      display: block;
+      color: #687385;
+      margin-bottom: 5px;
+    }
+
+    .detail strong {
+      font-size: 19px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .cart-item {
+      border-bottom: 1px solid #edf0f5;
+      padding: 12px 0;
+    }
+
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+
+    .qty-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .qty-controls button {
+      padding: 8px 13px;
+    }
+
+    .total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 21px;
+      font-weight: bold;
+      padding: 16px 0;
+    }
+
+    .muted {
+      color: #687385;
+      font-size: 13px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .message {
+      margin-top: 12px;
+      padding: 11px;
+      border-radius: 9px;
+      background: #e8f7ee;
+      color: #12633b;
+      font-size: 13px;
+    }
+
+    .error {
+      background: #fff0f0;
+      color: #b42318;
+    }
+
+    .small-btn {
+      font-size: 13px;
+      padding: 9px 12px;
     }
   </style>
 </head>
 
 <body>
 
-  <h2>My Shop Scanner</h2>
+<div class="container">
+
+  <h1>My Shop Scanner</h1>
+  <p class="subtitle">
+    Quick barcode scanning for Sell and Add Stock
+  </p>
+
+  <div class="notice">
+    TEST MODE — This version does not update Google Sheets.
+  </div>
 
   <div class="modes">
-    <button id="sellBtn" class="active"
+    <button id="sellBtn"
+            class="active"
             onclick="setMode('SELL')">
       Sell
     </button>
@@ -80,101 +263,669 @@
     </button>
   </div>
 
-  <div id="reader"></div>
+  <div class="card">
 
-  <p id="status">Loading scanner...</p>
+    <h3>Scan Barcode</h3>
 
-  <div class="result">
-    <p>Selected Mode: <b id="mode">SELL</b></p>
-    <p>Last Barcode: <b id="barcode">None</b></p>
-    <p>Scans Detected: <b id="count">0</b></p>
+    <div id="reader"></div>
+
+    <p id="status">Loading camera...</p>
+
+    <div class="field">
+      <label for="barcodeInput">
+        Barcode Number
+      </label>
+
+      <input
+        id="barcodeInput"
+        type="text"
+        placeholder="Scan or enter barcode"
+        autocomplete="off">
+    </div>
+
+    <button class="secondary"
+            style="width:100%"
+            onclick="lookupBarcode()">
+      Find Product
+    </button>
+
+    <p class="muted">
+      For the sample product, enter TEST001 and tap
+      Find Product.
+    </p>
+
   </div>
 
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <div id="productCard" class="card hidden">
 
-  <script>
-    let currentMode = "SELL";
-    let scanCount = 0;
-    let lastCode = "";
-    let lastScanTime = 0;
+    <h3>Product Found</h3>
 
-    function setMode(mode) {
-      currentMode = mode;
+    <p class="muted" id="productBarcode"></p>
 
-      document.getElementById("mode").textContent = mode;
+    <div class="product-name" id="productName"></div>
 
-      document.getElementById("sellBtn")
-        .classList.toggle("active", mode === "SELL");
+    <div class="details">
 
-      document.getElementById("stockBtn")
-        .classList.toggle("active", mode === "STOCK");
+      <div class="detail">
+        <small>Selling Price</small>
+        <strong id="productPrice"></strong>
+      </div>
+
+      <div class="detail">
+        <small>Available Stock</small>
+        <strong id="productStock"></strong>
+      </div>
+
+    </div>
+
+    <div class="field">
+      <label for="quantityInput">Quantity</label>
+
+      <input
+        id="quantityInput"
+        type="number"
+        min="1"
+        step="1"
+        value="1">
+    </div>
+
+    <button id="addProductBtn"
+            class="primary"
+            onclick="addSelectedProduct()">
+      Add to Bill
+    </button>
+
+  </div>
+
+  <div id="sellSection" class="card">
+
+    <h3>Pending Bill</h3>
+
+    <div id="cartItems" class="muted">
+      No products added yet.
+    </div>
+
+    <div class="total">
+      <span>Total</span>
+      <span id="billTotal">₹0.00</span>
+    </div>
+
+    <div class="field">
+      <label for="paymentMethod">Payment Method</label>
+
+      <select id="paymentMethod"
+              onchange="updatePaymentFields()">
+        <option value="Cash">Cash</option>
+        <option value="Paytm">Paytm</option>
+        <option value="Credit">Credit</option>
+      </select>
+    </div>
+
+    <div id="customerField" class="field hidden">
+      <label for="customerName">Customer Name</label>
+      <input id="customerName"
+             placeholder="Enter customer name">
+    </div>
+
+    <div class="field">
+      <label for="amountPaid">Amount Paid (₹)</label>
+      <input id="amountPaid"
+             type="number"
+             min="0"
+             step="0.01"
+             value="0">
+    </div>
+
+    <button class="success"
+            onclick="completeTestSale()">
+      Complete Sale (Test Only)
+    </button>
+
+    <div id="saleMessage"></div>
+
+  </div>
+
+  <div id="stockSection" class="card hidden">
+
+    <h3>Incoming Stock</h3>
+
+    <div id="stockItems" class="muted">
+      No products added yet.
+    </div>
+
+    <div class="field">
+      <label for="supplierName">Supplier Name</label>
+      <input id="supplierName"
+             placeholder="Enter supplier name">
+    </div>
+
+    <button class="success"
+            onclick="completeTestStock()">
+      Save Stock Entry (Test Only)
+    </button>
+
+    <div id="stockMessage"></div>
+
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+
+  // SAMPLE PRODUCTS ONLY.
+  // These are not connected to Google Sheets.
+
+  const testProducts = [
+    {
+      id: "P001",
+      barcode: "TEST001",
+      name: "Test Biscuit",
+      unit: "Pack",
+      price: 10,
+      stock: 7,
+      cost: 7
+    }
+  ];
+
+  let currentMode = "SELL";
+  let selectedProduct = null;
+
+  let cart = [];
+  let incomingStock = [];
+
+  let lastCode = "";
+  let lastScanTime = 0;
+
+  const money = value =>
+    "₹" + Number(value).toFixed(2);
+
+  function setMode(mode) {
+
+    currentMode = mode;
+    selectedProduct = null;
+
+    document.getElementById("sellBtn")
+      .classList.toggle("active", mode === "SELL");
+
+    document.getElementById("stockBtn")
+      .classList.toggle("active", mode === "STOCK");
+
+    document.getElementById("sellSection")
+      .classList.toggle("hidden", mode !== "SELL");
+
+    document.getElementById("stockSection")
+      .classList.toggle("hidden", mode !== "STOCK");
+
+    document.getElementById("productCard")
+      .classList.add("hidden");
+
+    document.getElementById("barcodeInput").value = "";
+
+    document.getElementById("status").textContent =
+      mode === "SELL"
+        ? "Sell mode ready. Scan a barcode."
+        : "Add Stock mode ready. Scan a barcode.";
+
+  }
+
+  function findProduct(barcode) {
+
+    const code = String(barcode || "").trim();
+
+    return testProducts.find(
+      product => product.barcode === code
+    );
+
+  }
+
+  function lookupBarcode() {
+
+    const barcode = document
+      .getElementById("barcodeInput")
+      .value.trim();
+
+    const product = findProduct(barcode);
+
+    if (!product) {
+
+      selectedProduct = null;
+
+      document.getElementById("productCard")
+        .classList.add("hidden");
+
+      document.getElementById("status").textContent =
+        "Barcode " + barcode +
+        " is not in the sample product list.";
+
+      return;
     }
 
-    function onScanSuccess(decodedText) {
-      const now = Date.now();
+    selectedProduct = product;
 
-      // Avoid repeated detection of the same barcode
-      // while the camera is pointed at one product.
-      if (decodedText === lastCode &&
-          now - lastScanTime < 3000) {
-        return;
-      }
+    document.getElementById("productBarcode")
+      .textContent = "Barcode: " + product.barcode;
 
-      lastCode = decodedText;
-      lastScanTime = now;
-      scanCount++;
+    document.getElementById("productName")
+      .textContent = product.name;
 
-      document.getElementById("barcode")
-        .textContent = decodedText;
+    document.getElementById("productPrice")
+      .textContent = money(product.price);
 
-      document.getElementById("count")
-        .textContent = scanCount;
+    document.getElementById("productStock")
+      .textContent =
+        product.stock + " " + product.unit;
 
-      document.getElementById("status")
-        .textContent = "Barcode detected successfully!";
+    document.getElementById("quantityInput").value = 1;
 
-      if (navigator.vibrate) {
-        navigator.vibrate(100);
-      }
+    document.getElementById("addProductBtn")
+      .textContent =
+        currentMode === "SELL"
+          ? "Add to Bill"
+          : "Add Incoming Stock";
+
+    document.getElementById("productCard")
+      .classList.remove("hidden");
+
+    document.getElementById("status").textContent =
+      "Product found: " + product.name;
+
+  }
+
+  function onScanSuccess(decodedText) {
+
+    const now = Date.now();
+
+    if (
+      decodedText === lastCode &&
+      now - lastScanTime < 3000
+    ) {
+      return;
     }
 
-    function onScanFailure(error) {
-      // Ignore ordinary frames without a barcode.
+    lastCode = decodedText;
+    lastScanTime = now;
+
+    document.getElementById("barcodeInput")
+      .value = decodedText;
+
+    lookupBarcode();
+
+    if (navigator.vibrate) {
+      navigator.vibrate(100);
     }
 
-    async function startScanner() {
-      const status = document.getElementById("status");
+  }
 
-      if (typeof Html5Qrcode === "undefined") {
-        status.textContent =
-          "Scanner library could not load.";
-        return;
-      }
+  function addSelectedProduct() {
 
-      const scanner = new Html5Qrcode("reader");
+    if (!selectedProduct) {
+      alert("Scan or select a product first.");
+      return;
+    }
 
-      try {
-        await scanner.start(
-          { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 150 }
-          },
-          onScanSuccess,
-          onScanFailure
+    const quantity = Number(
+      document.getElementById("quantityInput").value
+    );
+
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      alert("Enter a valid whole-number quantity.");
+      return;
+    }
+
+    const product = selectedProduct;
+
+    if (currentMode === "SELL") {
+
+      const existing = cart.find(
+        item => item.id === product.id
+      );
+
+      const existingQty = existing ? existing.quantity : 0;
+
+      if (existingQty + quantity > product.stock) {
+        alert(
+          "Not enough stock. Available: " +
+          product.stock
         );
-
-        status.textContent =
-          "Camera ready. Point at a barcode.";
-
-      } catch (error) {
-        status.textContent =
-          "Camera error: " + error.message;
+        return;
       }
+
+      if (existing) {
+        existing.quantity += quantity;
+      } else {
+        cart.push({
+          ...product,
+          quantity: quantity
+        });
+      }
+
+      renderCart();
+
+    } else {
+
+      const existing = incomingStock.find(
+        item => item.id === product.id
+      );
+
+      if (existing) {
+        existing.quantity += quantity;
+      } else {
+        incomingStock.push({
+          ...product,
+          quantity: quantity
+        });
+      }
+
+      renderIncomingStock();
     }
 
-    startScanner();
-  </script>
+    document.getElementById("productCard")
+      .classList.add("hidden");
+
+    selectedProduct = null;
+
+    document.getElementById("barcodeInput").value = "";
+
+    document.getElementById("status").textContent =
+      "Product added. Scan the next barcode.";
+
+  }
+
+  function changeCartQuantity(id, change) {
+
+    const item = cart.find(p => p.id === id);
+
+    if (!item) return;
+
+    const newQty = item.quantity + change;
+
+    if (newQty <= 0) {
+      cart = cart.filter(p => p.id !== id);
+    } else if (newQty <= item.stock) {
+      item.quantity = newQty;
+    } else {
+      alert("Not enough available stock.");
+    }
+
+    renderCart();
+
+  }
+
+  function renderCart() {
+
+    const container =
+      document.getElementById("cartItems");
+
+    container.innerHTML = "";
+
+    if (!cart.length) {
+      container.textContent = "No products added yet.";
+    }
+
+    cart.forEach(item => {
+
+      const div = document.createElement("div");
+      div.className = "cart-item";
+
+      const name = document.createElement("strong");
+      name.textContent = item.name;
+      div.appendChild(name);
+
+      const price = document.createElement("p");
+      price.className = "muted";
+      price.textContent =
+        money(item.price) + " per " + item.unit;
+      div.appendChild(price);
+
+      const controls = document.createElement("div");
+      controls.className = "qty-controls";
+
+      const minus = document.createElement("button");
+      minus.className = "secondary small-btn";
+      minus.textContent = "−";
+      minus.onclick = () =>
+        changeCartQuantity(item.id, -1);
+
+      const count = document.createElement("strong");
+      count.textContent = item.quantity;
+
+      const plus = document.createElement("button");
+      plus.className = "secondary small-btn";
+      plus.textContent = "+";
+      plus.onclick = () =>
+        changeCartQuantity(item.id, 1);
+
+      const total = document.createElement("strong");
+      total.textContent =
+        money(item.quantity * item.price);
+
+      controls.append(minus, count, plus, total);
+      div.appendChild(controls);
+
+      container.appendChild(div);
+
+    });
+
+    const total = cart.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    document.getElementById("billTotal")
+      .textContent = money(total);
+
+    updatePaymentFields();
+
+  }
+
+  function updatePaymentFields() {
+
+    const method =
+      document.getElementById("paymentMethod").value;
+
+    document.getElementById("customerField")
+      .classList.toggle("hidden", method !== "Credit");
+
+    const total = cart.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    if (method !== "Credit") {
+      document.getElementById("amountPaid").value =
+        total.toFixed(2);
+    }
+
+  }
+
+  function completeTestSale() {
+
+    const message =
+      document.getElementById("saleMessage");
+
+    if (!cart.length) {
+      alert("Add products to the bill first.");
+      return;
+    }
+
+    const method =
+      document.getElementById("paymentMethod").value;
+
+    const customer =
+      document.getElementById("customerName")
+        .value.trim();
+
+    const paid = Number(
+      document.getElementById("amountPaid").value
+    );
+
+    const total = cart.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    if (method === "Credit" && !customer) {
+      alert("Enter the customer name.");
+      return;
+    }
+
+    if (!Number.isFinite(paid) ||
+        paid < 0 ||
+        paid > total) {
+      alert("Enter a valid amount paid.");
+      return;
+    }
+
+    if (method !== "Credit" && paid < total) {
+      alert("Cash and Paytm must be paid in full.");
+      return;
+    }
+
+    message.className = "message";
+
+    message.textContent =
+      "Test bill completed! Total: " +
+      money(total) +
+      ". Payment: " + method +
+      ". Nothing was saved to Google Sheets.";
+
+    cart = [];
+    renderCart();
+
+  }
+
+  function renderIncomingStock() {
+
+    const container =
+      document.getElementById("stockItems");
+
+    container.innerHTML = "";
+
+    if (!incomingStock.length) {
+      container.textContent =
+        "No products added yet.";
+      return;
+    }
+
+    incomingStock.forEach(item => {
+
+      const div = document.createElement("div");
+      div.className = "cart-item";
+
+      const row = document.createElement("div");
+      row.className = "row";
+
+      const label = document.createElement("span");
+      label.textContent =
+        item.name + " — " +
+        item.quantity + " " + item.unit;
+
+      const remove = document.createElement("button");
+      remove.className = "danger small-btn";
+      remove.textContent = "Remove";
+
+      remove.onclick = () => {
+        incomingStock = incomingStock.filter(
+          p => p.id !== item.id
+        );
+        renderIncomingStock();
+      };
+
+      row.append(label, remove);
+      div.appendChild(row);
+      container.appendChild(div);
+
+    });
+
+  }
+
+  function completeTestStock() {
+
+    const message =
+      document.getElementById("stockMessage");
+
+    if (!incomingStock.length) {
+      alert("Add at least one product.");
+      return;
+    }
+
+    const supplier =
+      document.getElementById("supplierName")
+        .value.trim();
+
+    if (!supplier) {
+      alert("Enter the supplier name.");
+      return;
+    }
+
+    message.className = "message";
+
+    message.textContent =
+      "Test stock entry completed for " +
+      supplier +
+      ". Nothing was saved to Google Sheets.";
+
+    incomingStock = [];
+    renderIncomingStock();
+
+  }
+
+  async function startScanner() {
+
+    const status =
+      document.getElementById("status");
+
+    if (typeof Html5Qrcode === "undefined") {
+      status.textContent =
+        "Scanner library could not load.";
+      return;
+    }
+
+    const scanner = new Html5Qrcode("reader");
+
+    try {
+
+      await scanner.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: {
+            width: 250,
+            height: 150
+          }
+        },
+        onScanSuccess,
+        () => {}
+      );
+
+      status.textContent =
+        "Camera ready. Point at a barcode.";
+
+    } catch (error) {
+
+      status.textContent =
+        "Camera error: " + error.message;
+
+    }
+
+  }
+
+  document.getElementById("barcodeInput")
+    .addEventListener("keydown", event => {
+
+      if (event.key === "Enter") {
+        lookupBarcode();
+      }
+
+    });
+
+  renderCart();
+  renderIncomingStock();
+  startScanner();
+
+</script>
 
 </body>
 </html>
