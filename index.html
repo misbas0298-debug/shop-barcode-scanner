@@ -1,0 +1,180 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+  <title>My Shop Barcode Scanner</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f6fa;
+      text-align: center;
+    }
+
+    h2 {
+      color: #222;
+    }
+
+    .modes {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    button {
+      padding: 14px;
+      font-size: 17px;
+      border: none;
+      border-radius: 10px;
+      background: #ddd;
+      cursor: pointer;
+    }
+
+    .modes button {
+      flex: 1;
+    }
+
+    button.active {
+      background: #1565c0;
+      color: white;
+    }
+
+    #reader {
+      width: 100%;
+      max-width: 450px;
+      margin: 20px auto;
+    }
+
+    .result {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 20px;
+      overflow-wrap: anywhere;
+    }
+
+    #status {
+      color: #555;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>My Shop Scanner</h2>
+
+  <div class="modes">
+    <button id="sellBtn" class="active"
+            onclick="setMode('SELL')">
+      Sell
+    </button>
+
+    <button id="stockBtn"
+            onclick="setMode('STOCK')">
+      Add Stock
+    </button>
+  </div>
+
+  <div id="reader"></div>
+
+  <p id="status">Loading scanner...</p>
+
+  <div class="result">
+    <p>Selected Mode: <b id="mode">SELL</b></p>
+    <p>Last Barcode: <b id="barcode">None</b></p>
+    <p>Scans Detected: <b id="count">0</b></p>
+  </div>
+
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <script>
+    let currentMode = "SELL";
+    let scanCount = 0;
+    let lastCode = "";
+    let lastScanTime = 0;
+
+    function setMode(mode) {
+      currentMode = mode;
+
+      document.getElementById("mode").textContent = mode;
+
+      document.getElementById("sellBtn")
+        .classList.toggle("active", mode === "SELL");
+
+      document.getElementById("stockBtn")
+        .classList.toggle("active", mode === "STOCK");
+    }
+
+    function onScanSuccess(decodedText) {
+      const now = Date.now();
+
+      // Avoid repeated detection of the same barcode
+      // while the camera is pointed at one product.
+      if (decodedText === lastCode &&
+          now - lastScanTime < 3000) {
+        return;
+      }
+
+      lastCode = decodedText;
+      lastScanTime = now;
+      scanCount++;
+
+      document.getElementById("barcode")
+        .textContent = decodedText;
+
+      document.getElementById("count")
+        .textContent = scanCount;
+
+      document.getElementById("status")
+        .textContent = "Barcode detected successfully!";
+
+      if (navigator.vibrate) {
+        navigator.vibrate(100);
+      }
+    }
+
+    function onScanFailure(error) {
+      // Ignore ordinary frames without a barcode.
+    }
+
+    async function startScanner() {
+      const status = document.getElementById("status");
+
+      if (typeof Html5Qrcode === "undefined") {
+        status.textContent =
+          "Scanner library could not load.";
+        return;
+      }
+
+      const scanner = new Html5Qrcode("reader");
+
+      try {
+        await scanner.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 150 }
+          },
+          onScanSuccess,
+          onScanFailure
+        );
+
+        status.textContent =
+          "Camera ready. Point at a barcode.";
+
+      } catch (error) {
+        status.textContent =
+          "Camera error: " + error.message;
+      }
+    }
+
+    startScanner();
+  </script>
+
+</body>
+</html>
