@@ -54,18 +54,23 @@ input,select{width:100%;padding:12px;border:1px solid #d6dce5;border-radius:9px;
 .lookup-warning{background:#fff3d7;color:#785000}
 .lookup-error{background:#fff0f0;color:#9b3030}
 .product-image{display:block;max-width:135px;max-height:135px;object-fit:contain;margin:10px auto;border-radius:8px}
+.two-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two-fields .field{margin:8px 0}
+.confirm-box{background:#f4f7fb;border-radius:10px;padding:12px;margin:12px 0}
+.confirm-line{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:13px}
+.confirm-line strong{text-align:right;overflow-wrap:anywhere}
+.section-heading{font-size:14px;color:#1769c2;margin-top:20px}
 </style>
 </head>
-
 <body>
 <div class="container">
 <h1>My Shop Scanner</h1>
-<p class="subtitle">Scan • Identify • Sell • Add Stock</p>
+<p class="subtitle">Scan • Identify • Register • Sell • Add Stock</p>
 
 <div class="notice">
 <strong>TEST MODE</strong><br>
-No changes are made to Google Sheets.
-New products and test transactions are temporary.
+No changes are made to Google Sheets.<br>
+Products and transactions are temporary.
 </div>
 
 <div id="loginSection" class="card login-box">
@@ -82,7 +87,7 @@ New products and test transactions are temporary.
 <span id="signedInUser" class="signed-in"></span>
 <button class="secondary small" onclick="signOut()">Sign out</button>
 </div>
-<p class="muted">Test sign-in only. Secure server-side authorization is not connected yet.</p>
+<p class="muted">Google Sign-In is for testing. Secure server authorization is not connected yet.</p>
 </div>
 
 <div class="modes">
@@ -108,6 +113,7 @@ New products and test transactions are temporary.
 <h3>Product Found</h3>
 <p id="productBarcode" class="muted"></p>
 <div id="productName" class="product-name"></div>
+<p id="productExtra" class="muted"></p>
 
 <div class="details">
 <div class="detail">
@@ -131,21 +137,18 @@ New products and test transactions are temporary.
 <div id="unknownProductCard" class="card hidden">
 <h3>New Barcode Detected</h3>
 <p id="unknownBarcodeText" class="muted"></p>
-<div id="lookupStatus" class="lookup-box">Checking product database...</div>
-
+<div id="lookupStatus" class="lookup-box">Searching...</div>
 <img id="lookupImage" class="product-image hidden" alt="Product photo">
-
-<button id="registerBtn" class="success" onclick="openNewProductForm()">
-+ Register New Product
-</button>
+<button id="registerBtn" class="success" onclick="openNewProductForm()">+ Register New Product</button>
 </div>
 
 <div id="newProductCard" class="card new-product hidden">
-<h3>Register New Product</h3>
-
+<h3>Confirm New Product</h3>
 <div id="autofillMessage" class="lookup-box">
-Review the product details before saving.
+Review the details before saving.
 </div>
+
+<h4 class="section-heading">Product Information</h4>
 
 <div class="field">
 <label for="newBarcode">Barcode *</label>
@@ -154,21 +157,41 @@ Review the product details before saving.
 
 <div class="field">
 <label for="newName">Product Name *</label>
-<input id="newName" type="text" placeholder="Example: Parle-G Biscuits">
+<input id="newName" type="text" placeholder="Example: Vim Dishwash Liquid">
 </div>
 
 <div class="field">
-<label for="newBrand">Brand (Optional)</label>
-<input id="newBrand" type="text" placeholder="Example: Parle">
+<label for="newBrand">Brand</label>
+<input id="newBrand" type="text" placeholder="Example: Vim">
 </div>
 
 <div class="field">
 <label for="newCategory">Category *</label>
-<input id="newCategory" type="text" placeholder="Example: Biscuits">
+<select id="newCategory">
+<option value="">Select Category</option>
+<option>Groceries & Staples</option>
+<option>Masalas & Spices</option>
+<option>Packaged Foods & Snacks</option>
+<option>Beverages</option>
+<option>Bath & Personal Care</option>
+<option>Oral Care</option>
+<option>Laundry & Dishwashing</option>
+<option>Home Cleaning</option>
+<option>Baby & Feminine Care</option>
+<option>Puja & Household</option>
+<option>Stationery & Miscellaneous</option>
+<option>Pet Care</option>
+<option>Other</option>
+</select>
 </div>
 
+<div class="two-fields">
 <div class="field">
-<label for="newUnit">Unit *</label>
+<label for="newPackSize">Pack Size *</label>
+<input id="newPackSize" type="text" placeholder="50 g, 1 kg, 500 ml">
+</div>
+<div class="field">
+<label for="newUnit">Stock Unit *</label>
 <select id="newUnit">
 <option value="Piece">Piece</option>
 <option value="Pack">Pack</option>
@@ -180,25 +203,44 @@ Review the product details before saving.
 <option value="Other">Other</option>
 </select>
 </div>
+</div>
 
+<h4 class="section-heading">Pricing & Stock</h4>
+
+<div class="two-fields">
 <div class="field">
-<label for="newCost">Cost Price (₹) *</label>
+<label for="newCost">Buying Price (₹) *</label>
 <input id="newCost" type="number" min="0" step="0.01" placeholder="Purchase price">
 </div>
+<div class="field">
+<label for="newMrp">Printed MRP (₹)</label>
+<input id="newMrp" type="number" min="0" step="0.01" placeholder="Optional">
+</div>
+</div>
 
+<div class="two-fields">
 <div class="field">
 <label for="newPrice">Selling Price (₹) *</label>
-<input id="newPrice" type="number" min="0" step="0.01" placeholder="Selling price">
+<input id="newPrice" type="number" min="0" step="0.01" placeholder="Shop price">
 </div>
-
 <div class="field">
 <label for="newStock">Opening Stock *</label>
-<input id="newStock" type="number" min="0" step="1" placeholder="Quantity available">
+<input id="newStock" type="number" min="0" step="1" placeholder="Packets / pieces">
+</div>
 </div>
 
-<button class="success" onclick="saveNewProduct()">Save New Product (Test)</button>
-<button class="secondary" style="width:100%;margin-top:10px" onclick="cancelNewProduct()">Cancel</button>
-<p class="muted">This product is only stored temporarily in this browser session.</p>
+<button class="primary" onclick="previewNewProduct()">Review Product Details</button>
+
+<div id="confirmPanel" class="hidden">
+<h4>Final Confirmation</h4>
+<div id="confirmDetails" class="confirm-box"></div>
+<p class="muted">Please verify the product, pack size, buying price, MRP, selling price and stock.</p>
+<button class="success" onclick="saveNewProduct()">Confirm & Save Product (Test)</button>
+<button class="secondary" style="width:100%;margin-top:10px" onclick="hideConfirmation()">Edit Details</button>
+</div>
+
+<button class="secondary" style="width:100%;margin-top:10px" onclick="cancelNewProduct()">Cancel Registration</button>
+<p class="muted">Test products disappear when this page reloads. No Google Sheets changes are made.</p>
 </div>
 
 <div id="sellSection" class="card">
@@ -251,18 +293,24 @@ Review the product details before saving.
 const CLIENT_ID =
 "726131260427-uf3p02ec8r53qma0tnbm4oa1v0bgsrk9.apps.googleusercontent.com";
 
-const testProducts = [
-{
+const testProducts = [{
 id:"P001",
 barcode:"TEST001",
 name:"Test Biscuit",
 brand:"",
-category:"Snacks",
+category:"Packaged Foods & Snacks",
+packSize:"50 g",
 unit:"Pack",
 cost:7,
+mrp:10,
 price:10,
 stock:7
-}
+}];
+
+const DATABASES = [
+{url:"https://world.openfoodfacts.org",label:"Open Food Facts"},
+{url:"https://world.openbeautyfacts.org",label:"Open Beauty Facts"},
+{url:"https://world.openproductsfacts.org",label:"Open Products Facts"}
 ];
 
 let currentMode = "SELL";
@@ -279,22 +327,20 @@ let lookupSequence = 0;
 let lookupController = null;
 let onlineProduct = null;
 let onlineProductBarcode = "";
+let confirmedSnapshot = null;
 
 const el = id => document.getElementById(id);
-const money = value => "₹" + Number(value).toFixed(2);
+const money = n => "₹" + Number(n).toFixed(2);
 
 function hideProductPanels(){
-el("productCard").classList.add("hidden");
-el("unknownProductCard").classList.add("hidden");
-el("newProductCard").classList.add("hidden");
+["productCard","unknownProductCard","newProductCard"].forEach(id =>
+el(id).classList.add("hidden"));
 }
 
 function cancelPendingLookup(){
 lookupSequence++;
-if(lookupController){
-lookupController.abort();
+if(lookupController) lookupController.abort();
 lookupController = null;
-}
 onlineProduct = null;
 onlineProductBarcode = "";
 }
@@ -302,54 +348,42 @@ onlineProductBarcode = "";
 function decodeJwtPayload(jwt){
 const parts = jwt.split(".");
 if(parts.length !== 3) throw new Error("Invalid credential");
-
-const base64 = parts[1].replace(/-/g,"+").replace(/_/g,"/");
-const bytes = Array.from(atob(base64), char =>
-"%" + char.charCodeAt(0).toString(16).padStart(2,"0")
-).join("");
-
+const b64 = parts[1].replace(/-/g,"+").replace(/_/g,"/");
+const bytes = Array.from(atob(b64),c =>
+"%" + c.charCodeAt(0).toString(16).padStart(2,"0")).join("");
 return JSON.parse(decodeURIComponent(bytes));
 }
 
 function onGoogleSignIn(response){
 try{
 if(!response?.credential) throw new Error("No credential received");
-
 const user = decodeJwtPayload(response.credential);
-
 if(user.aud !== CLIENT_ID || user.exp * 1000 < Date.now()){
 throw new Error("Unexpected credential");
 }
-
 loggedIn = true;
 el("signedInUser").textContent = user.name || user.email || "Google user";
 el("loginSection").classList.add("hidden");
 el("appSection").classList.remove("hidden");
 startScanner();
-}catch(error){
-el("loginStatus").textContent = "Sign-in failed: " + error.message;
+}catch(e){
+el("loginStatus").textContent = "Sign-in failed: " + e.message;
 }
 }
 
 function initializeGoogleSignIn(){
 if(!window.google?.accounts?.id){
-el("loginStatus").textContent = "Google Sign-In did not load. Refresh the page.";
+el("loginStatus").textContent = "Google Sign-In did not load. Refresh.";
 return;
 }
-
 google.accounts.id.initialize({
 client_id:CLIENT_ID,
 callback:onGoogleSignIn,
 auto_select:false
 });
-
 google.accounts.id.renderButton(el("googleSignIn"),{
-theme:"outline",
-size:"large",
-text:"signin_with",
-shape:"rectangular"
+theme:"outline",size:"large",text:"signin_with",shape:"rectangular"
 });
-
 el("loginStatus").textContent = "Use your Google account to continue.";
 }
 
@@ -359,6 +393,7 @@ cancelPendingLookup();
 selectedProduct = null;
 cart = [];
 incomingStock = [];
+confirmedSnapshot = null;
 renderCart();
 renderIncomingStock();
 hideProductPanels();
@@ -366,31 +401,24 @@ hideProductPanels();
 el("appSection").classList.add("hidden");
 el("loginSection").classList.remove("hidden");
 el("signedInUser").textContent = "";
-
 if(window.google?.accounts?.id) google.accounts.id.disableAutoSelect();
 
-const oldScanner = scanner;
+const old = scanner;
 scanner = null;
 scannerStarted = false;
-
-if(oldScanner){
-try{
-await oldScanner.stop();
-}catch(error){}
-try{
-oldScanner.clear();
-}catch(error){}
+if(old){
+try{await old.stop();}catch(e){}
+try{old.clear();}catch(e){}
 }
-
-el("loginStatus").textContent = "Signed out. You can sign in again.";
+el("loginStatus").textContent = "Signed out. Sign in again.";
 }
 
 function setMode(mode){
 if(mode !== "SELL" && mode !== "STOCK") return;
-
 cancelPendingLookup();
 currentMode = mode;
 selectedProduct = null;
+confirmedSnapshot = null;
 
 el("sellBtn").classList.toggle("active",mode === "SELL");
 el("stockBtn").classList.toggle("active",mode === "STOCK");
@@ -399,78 +427,70 @@ el("stockSection").classList.toggle("hidden",mode !== "STOCK");
 
 hideProductPanels();
 el("barcodeInput").value = "";
-el("status").textContent = mode === "SELL"
-? "Sell mode ready. Scan a barcode."
-: "Add Stock mode ready. Scan a barcode.";
+el("status").textContent =
+mode === "SELL" ? "Sell mode ready." : "Add Stock mode ready.";
 }
 
-// BARCODE LOOKUP
+// PRODUCT LOOKUP
 
 async function lookupBarcode(){
 if(!loggedIn) return;
 
 const barcode = el("barcodeInput").value.trim();
-
 cancelPendingLookup();
 const requestNumber = lookupSequence;
-
+selectedProduct = null;
 hideProductPanels();
 
 if(!barcode){
-selectedProduct = null;
 el("status").textContent = "Please scan or enter a barcode.";
 return;
 }
 
-// First check the shop's demo inventory.
-const product = testProducts.find(p => p.barcode === barcode);
+const existing = testProducts.find(p => p.barcode === barcode);
 
-if(product){
-selectedProduct = product;
-
-el("productBarcode").textContent = "Barcode: " + product.barcode;
-el("productName").textContent = product.name;
-el("productPrice").textContent = money(product.price);
-el("productStock").textContent = product.stock + " " + product.unit;
+if(existing){
+selectedProduct = existing;
+el("productBarcode").textContent = "Barcode: " + existing.barcode;
+el("productName").textContent = existing.name;
+el("productExtra").textContent =
+[existing.brand,existing.packSize,existing.category].filter(Boolean).join(" • ");
+el("productPrice").textContent = money(existing.price);
+el("productStock").textContent = existing.stock + " " + existing.unit;
 el("quantityInput").value = "1";
-
 el("addProductBtn").textContent =
 currentMode === "SELL" ? "Add to Bill" : "Add Incoming Stock";
-
 el("productCard").classList.remove("hidden");
-el("status").textContent = "Product found: " + product.name;
+el("status").textContent = "Product found: " + existing.name;
 return;
 }
 
-selectedProduct = null;
-
 el("unknownBarcodeText").textContent = "Barcode: " + barcode;
 el("unknownProductCard").classList.remove("hidden");
-
 el("lookupImage").classList.add("hidden");
 el("lookupImage").removeAttribute("src");
-
-el("lookupStatus").className = "lookup-box";
-el("lookupStatus").textContent = "Searching online product database...";
 el("registerBtn").disabled = true;
-el("status").textContent = "Searching for product name...";
 
-// Open Food Facts is intended for packaged food barcodes.
-// The request may fail because of network or API restrictions.
 if(!/^[0-9]{8,14}$/.test(barcode)){
-el("lookupStatus").className = "lookup-box lookup-warning";
-el("lookupStatus").textContent =
-"This is not a standard numeric retail barcode. Enter product details manually.";
+showLookupMessage("Not a standard numeric retail barcode. Register manually.","warning");
 el("registerBtn").disabled = false;
 return;
 }
 
 const controller = new AbortController();
 lookupController = controller;
+let found = null;
+let successfulResponses = 0;
 
 try{
-const url =
-"https://world.openfoodfacts.org/api/v2/product/" +
+for(const db of DATABASES){
+if(requestNumber !== lookupSequence) return;
+
+showLookupMessage("Searching " + db.label + "...","normal");
+el("status").textContent = "Searching product databases...";
+
+try{
+const url = db.url + "/api/v2/product/" +
 encodeURIComponent(barcode) +
 ".json?fields=code,product_name,product_name_en,brands,categories,categories_tags,quantity,packaging,image_front_small_url";
 
@@ -480,69 +500,65 @@ headers:{"Accept":"application/json"},
 signal:controller.signal
 });
 
-if(!response.ok) throw new Error("Product service unavailable");
-
+if(!response.ok) continue;
 const data = await response.json();
+successfulResponses++;
 
-if(
-!loggedIn ||
-requestNumber !== lookupSequence ||
-el("barcodeInput").value.trim() !== barcode
-){
-return;
-}
+if(requestNumber !== lookupSequence || !loggedIn ||
+el("barcodeInput").value.trim() !== barcode) return;
 
 if(data.status === 1 && data.product){
 const p = data.product;
-
-const name = String(
-p.product_name_en || p.product_name || ""
-).trim();
-
+const name = String(p.product_name_en || p.product_name || "").trim();
 const brand = String(p.brands || "").trim();
 
-const category = guessCategory(p);
-const unit = guessUnit(p);
-
 if(name || brand){
-onlineProduct = {
-name:name,
-brand:brand,
-category:category,
-unit:unit,
-quantity:String(p.quantity || "").trim()
+found = {
+name,brand,
+category:guessCategory(p,db.label),
+packSize:String(p.quantity || "").trim(),
+unit:guessUnit(p),
+image:String(p.image_front_small_url || ""),
+source:db.label
 };
+break;
+}
+}
+}catch(e){
+if(e.name === "AbortError") return;
+console.warn(db.label + " lookup failed:",e);
+}
+}
 
+if(requestNumber !== lookupSequence) return;
+
+if(found){
+onlineProduct = found;
 onlineProductBarcode = barcode;
 
-el("lookupStatus").className = "lookup-box lookup-found";
-el("lookupStatus").textContent =
-"Product details found! " +
-(name || brand) +
-". Tap Register New Product to review and autofill the form.";
+showLookupMessage(
+"Product found in " + found.source + "! " +
+(found.name || found.brand) +
+". Tap Register New Product to review the details.",
+"found");
 
-const imageUrl = String(p.image_front_small_url || "");
-
-if(/^https:\/\/[a-z0-9.-]+\/.+/i.test(imageUrl)){
-el("lookupImage").src = imageUrl;
+if(/^https:\/\/[a-z0-9.-]+\/.+/i.test(found.image)){
+el("lookupImage").src = found.image;
 el("lookupImage").classList.remove("hidden");
 }
 
-el("status").textContent = "Product identified online.";
+el("status").textContent = "Product details found online.";
+}else if(successfulResponses > 0){
+showLookupMessage(
+"No matching product found in the databases checked. Register it manually.",
+"warning");
+el("status").textContent = "No online match. Manual registration available.";
 }else{
-showNotFound();
+showLookupMessage(
+"Product databases could not be reached. Register the product manually.",
+"error");
+el("status").textContent = "Online lookup unavailable.";
 }
-}else{
-showNotFound();
-}
-}catch(error){
-if(error.name === "AbortError") return;
-if(requestNumber !== lookupSequence) return;
-
-el("lookupStatus").className = "lookup-box lookup-error";
-el("lookupStatus").textContent =
-"Online lookup is unavailable right now. You can still register the product manually.";
-el("status").textContent = "Online lookup failed. Manual entry available.";
 }finally{
 if(requestNumber === lookupSequence){
 lookupController = null;
@@ -551,166 +567,228 @@ el("registerBtn").disabled = false;
 }
 }
 
-function showNotFound(){
-el("lookupStatus").className = "lookup-box lookup-warning";
-el("lookupStatus").textContent =
-"No matching product found in Open Food Facts. Please enter its details manually.";
-el("status").textContent = "Product not found online. Manual registration available.";
+function showLookupMessage(message,type){
+const box = el("lookupStatus");
+box.className = "lookup-box";
+if(type === "found") box.classList.add("lookup-found");
+if(type === "warning") box.classList.add("lookup-warning");
+if(type === "error") box.classList.add("lookup-error");
+box.textContent = message;
 }
 
-function guessCategory(p){
+function guessCategory(p,source){
 const tags = Array.isArray(p.categories_tags)
-? p.categories_tags.join(" ").toLowerCase() : "";
+? p.categories_tags.join(" ") : "";
+const text = (tags + " " + String(p.categories || "")).toLowerCase();
 
-const raw = String(p.categories || "").toLowerCase();
-const text = tags + " " + raw;
+if(/spice|masala|turmeric|cumin|coriander|seasoning/.test(text))
+return "Masalas & Spices";
+if(/toothpaste|toothbrush|mouthwash|oral|dental/.test(text))
+return "Oral Care";
+if(/dishwash|detergent|laundry|fabric.softener/.test(text))
+return "Laundry & Dishwashing";
+if(/floor.cleaner|toilet.cleaner|disinfectant|surface.cleaner/.test(text))
+return "Home Cleaning";
+if(/soap|handwash|shampoo|conditioner|skin|cosmetic|deodorant|hair.oil/.test(text))
+return "Bath & Personal Care";
+if(/diaper|baby|sanitary.pad|feminine/.test(text))
+return "Baby & Feminine Care";
+if(/biscuit|chips|snack|chocolate|noodle|cookie|candy/.test(text))
+return "Packaged Foods & Snacks";
+if(/drink|juice|water|tea|coffee|beverage/.test(text))
+return "Beverages";
+if(/rice|flour|atta|poha|dal|lentil|sugar|salt|grain|oil|ghee/.test(text))
+return "Groceries & Staples";
+if(/pet|dog.food|cat.food/.test(text))
+return "Pet Care";
+if(/incense|agarbatti|candle|camphor/.test(text))
+return "Puja & Household";
+if(/stationery|pen|pencil|notebook/.test(text))
+return "Stationery & Miscellaneous";
 
-if(/biscuit|cookie/.test(text)) return "Biscuits";
-if(/chocolate/.test(text)) return "Chocolates";
-if(/chips|crisps/.test(text)) return "Chips";
-if(/soft.drink|soda|cola/.test(text)) return "Cold Drinks";
-if(/juice/.test(text)) return "Juices";
-if(/milk/.test(text)) return "Milk";
-if(/water/.test(text)) return "Water";
-if(/noodle/.test(text)) return "Noodles";
-if(/bread/.test(text)) return "Bread";
-if(/snack/.test(text)) return "Snacks";
-
-const categories = String(p.categories || "").split(",");
-return categories.length
-? categories[categories.length - 1].trim().slice(0,80)
-: "";
+if(source === "Open Beauty Facts") return "Bath & Personal Care";
+if(source === "Open Food Facts") return "Packaged Foods & Snacks";
+return "Other";
 }
 
 function guessUnit(p){
 const packaging = String(p.packaging || "").toLowerCase();
-
 if(/bottle/.test(packaging)) return "Bottle";
 if(/box|carton/.test(packaging)) return "Box";
 if(/pack|bag|sachet|wrapper/.test(packaging)) return "Pack";
-
 return "Piece";
 }
 
-// NEW PRODUCT REGISTRATION
+// NEW PRODUCT FORM
 
 function openNewProductForm(){
 const barcode = el("barcodeInput").value.trim();
-
 if(!barcode){
-alert("Please enter a barcode first.");
+alert("Please enter a barcode.");
 return;
 }
 
-const match =
-onlineProductBarcode === barcode ? onlineProduct : null;
+const match = onlineProductBarcode === barcode ? onlineProduct : null;
 
 hideProductPanels();
+confirmedSnapshot = null;
+el("confirmPanel").classList.add("hidden");
 
 el("newBarcode").value = barcode;
 el("newName").value = match?.name || "";
 el("newBrand").value = match?.brand || "";
 el("newCategory").value = match?.category || "";
+el("newPackSize").value = match?.packSize || "";
 el("newUnit").value = match?.unit || "Piece";
 el("newCost").value = "";
+el("newMrp").value = "";
 el("newPrice").value = "";
 el("newStock").value = "";
 
 const msg = el("autofillMessage");
-
-if(match){
-msg.className = "lookup-box lookup-found";
-msg.textContent =
-"Product details were filled from Open Food Facts. " +
-(match.quantity ? "Pack size: " + match.quantity + ". " : "") +
-"Please verify the name, brand, category, unit, and prices.";
-}else{
-msg.className = "lookup-box lookup-warning";
-msg.textContent =
-"No online details available. Please enter product information manually.";
-}
+msg.className = "lookup-box " +
+(match ? "lookup-found" : "lookup-warning");
+msg.textContent = match
+? "Details autofilled from " + match.source +
+". Check the name, category and pack size. Enter prices and stock."
+: "Online details unavailable. Enter the product information manually.";
 
 el("newProductCard").classList.remove("hidden");
-el("newProductCard").scrollIntoView({
-behavior:"smooth",
-block:"start"
-});
+el("newProductCard").scrollIntoView({behavior:"smooth",block:"start"});
 }
 
 function cancelNewProduct(){
+confirmedSnapshot = null;
 el("newProductCard").classList.add("hidden");
 el("unknownProductCard").classList.remove("hidden");
+}
+
+function readProductForm(){
+const rawCost = el("newCost").value.trim();
+const rawPrice = el("newPrice").value.trim();
+const rawMrp = el("newMrp").value.trim();
+const rawStock = el("newStock").value.trim();
+
+return {
+barcode:el("newBarcode").value.trim(),
+name:el("newName").value.trim(),
+brand:el("newBrand").value.trim(),
+category:el("newCategory").value,
+packSize:el("newPackSize").value.trim(),
+unit:el("newUnit").value,
+cost:rawCost === "" ? NaN : Number(rawCost),
+mrp:rawMrp === "" ? null : Number(rawMrp),
+price:rawPrice === "" ? NaN : Number(rawPrice),
+stock:rawStock === "" ? NaN : Number(rawStock)
+};
+}
+
+function validateProduct(p){
+if(!p.barcode || !p.name || !p.category || !p.packSize || !p.unit){
+alert("Please complete all required product details, including pack size.");
+return false;
+}
+
+if(testProducts.some(x => x.barcode === p.barcode)){
+alert("This barcode is already registered.");
+return false;
+}
+
+if(
+!Number.isFinite(p.cost) || p.cost < 0 ||
+!Number.isFinite(p.price) || p.price < 0 ||
+!Number.isInteger(p.stock) || p.stock < 0 ||
+(p.mrp !== null && (!Number.isFinite(p.mrp) || p.mrp < 0))
+){
+alert("Enter valid buying price, selling price, MRP and whole-number stock.");
+return false;
+}
+
+if(p.mrp !== null && p.price > p.mrp){
+alert("Selling price cannot exceed the printed MRP. Please check both prices.");
+return false;
+}
+
+return true;
+}
+
+function addConfirmLine(container,label,value){
+const line = document.createElement("div");
+line.className = "confirm-line";
+const left = document.createElement("span");
+left.textContent = label;
+const right = document.createElement("strong");
+right.textContent = String(value);
+line.append(left,right);
+container.appendChild(line);
+}
+
+function previewNewProduct(){
+if(!loggedIn) return;
+const p = readProductForm();
+if(!validateProduct(p)) return;
+
+confirmedSnapshot = JSON.stringify(p);
+const box = el("confirmDetails");
+box.replaceChildren();
+
+addConfirmLine(box,"Product",p.name);
+addConfirmLine(box,"Brand",p.brand || "—");
+addConfirmLine(box,"Barcode",p.barcode);
+addConfirmLine(box,"Category",p.category);
+addConfirmLine(box,"Pack Size",p.packSize);
+addConfirmLine(box,"Stock Unit",p.unit);
+addConfirmLine(box,"Buying Price",money(p.cost));
+addConfirmLine(box,"MRP",p.mrp === null ? "Not entered" : money(p.mrp));
+addConfirmLine(box,"Selling Price",money(p.price));
+addConfirmLine(box,"Opening Stock",p.stock);
+addConfirmLine(box,"Profit per unit",money(p.price-p.cost));
+addConfirmLine(box,"Total Purchase Value",money(p.cost*p.stock));
+
+el("confirmPanel").classList.remove("hidden");
+el("confirmPanel").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function hideConfirmation(){
+confirmedSnapshot = null;
+el("confirmPanel").classList.add("hidden");
 }
 
 function saveNewProduct(){
 if(!loggedIn) return;
 
-const barcode = el("newBarcode").value.trim();
-const name = el("newName").value.trim();
-const brand = el("newBrand").value.trim();
-const category = el("newCategory").value.trim();
-const unit = el("newUnit").value;
+const p = readProductForm();
 
-const costText = el("newCost").value.trim();
-const priceText = el("newPrice").value.trim();
-const stockText = el("newStock").value.trim();
-
-const cost = Number(costText);
-const price = Number(priceText);
-const stock = Number(stockText);
-
-if(!barcode || !name || !category || !unit){
-alert("Please complete all required product details.");
+if(!confirmedSnapshot || JSON.stringify(p) !== confirmedSnapshot){
+hideConfirmation();
+alert("Product details changed. Please review and confirm again.");
 return;
 }
 
-if(testProducts.some(p => p.barcode === barcode)){
-alert("This barcode is already registered.");
-return;
-}
+if(!validateProduct(p)) return;
 
-if(
-costText === "" ||
-priceText === "" ||
-stockText === "" ||
-!Number.isFinite(cost) ||
-!Number.isFinite(price) ||
-!Number.isInteger(stock) ||
-cost < 0 || price < 0 || stock < 0
-){
-alert("Enter valid prices and a whole-number opening stock.");
-return;
-}
-
-const product = {
+testProducts.push({
 id:"TEST-" + Date.now() + "-" +
 Math.random().toString(36).slice(2,8),
-barcode,
-name,
-brand,
-category,
-unit,
-cost,
-price,
-stock
-};
+...p
+});
 
-testProducts.push(product);
-
+confirmedSnapshot = null;
 cancelPendingLookup();
-el("barcodeInput").value = barcode;
+el("barcodeInput").value = p.barcode;
 lookupBarcode();
 
 alert(
 "Product registered successfully!\n\n" +
-"Name: " + name + "\n" +
-"Barcode: " + barcode + "\n" +
-"Opening stock: " + stock + "\n\n" +
+p.name + " — " + p.packSize + "\n" +
+"Barcode: " + p.barcode + "\n" +
+"Selling Price: " + money(p.price) + "\n" +
+"Stock: " + p.stock + "\n\n" +
 "TEST MODE: Not saved to Google Sheets."
 );
 }
 
-// ADD PRODUCT TO BILL OR INCOMING STOCK
+// BILLING AND STOCK
 
 function addSelectedProduct(){
 if(!selectedProduct){
@@ -719,7 +797,6 @@ return;
 }
 
 const quantity = Number(el("quantityInput").value);
-
 if(!Number.isInteger(quantity) || quantity <= 0){
 alert("Enter a valid whole-number quantity.");
 return;
@@ -728,30 +805,22 @@ return;
 const product = selectedProduct;
 
 if(currentMode === "SELL"){
-const existing = cart.find(item => item.id === product.id);
-const existingQty = existing ? existing.quantity : 0;
+const existing = cart.find(x => x.id === product.id);
+const current = existing ? existing.quantity : 0;
 
-if(existingQty + quantity > product.stock){
+if(current + quantity > product.stock){
 alert("Not enough stock. Available: " + product.stock);
 return;
 }
 
-if(existing){
-existing.quantity += quantity;
-}else{
-cart.push({...product,quantity});
-}
+if(existing) existing.quantity += quantity;
+else cart.push({...product,quantity});
 
 renderCart();
 }else{
-const existing = incomingStock.find(item => item.id === product.id);
-
-if(existing){
-existing.quantity += quantity;
-}else{
-incomingStock.push({...product,quantity});
-}
-
+const existing = incomingStock.find(x => x.id === product.id);
+if(existing) existing.quantity += quantity;
+else incomingStock.push({...product,quantity});
 renderIncomingStock();
 }
 
@@ -761,39 +830,30 @@ el("barcodeInput").value = "";
 el("status").textContent = "Product added. Scan the next barcode.";
 }
 
-// BILL QUANTITY CONTROLS
-
 function changeCartQuantity(id,change){
-const item = cart.find(p => p.id === id);
+const item = cart.find(x => x.id === id);
 if(!item) return;
-
 const next = item.quantity + change;
 
-if(next <= 0){
-cart = cart.filter(p => p.id !== id);
-}else if(next <= item.stock){
-item.quantity = next;
-}else{
-alert("Not enough available stock.");
-}
+if(next <= 0) cart = cart.filter(x => x.id !== id);
+else if(next <= item.stock) item.quantity = next;
+else alert("Not enough available stock.");
 
 renderCart();
 }
 
 function renderCart(){
-const container = el("cartItems");
-container.replaceChildren();
+const box = el("cartItems");
+box.replaceChildren();
 
-if(!cart.length){
-container.textContent = "No products added yet.";
-}
+if(!cart.length) box.textContent = "No products added yet.";
 
 cart.forEach(item => {
 const div = document.createElement("div");
 div.className = "cart-item";
 
 const name = document.createElement("strong");
-name.textContent = item.name;
+name.textContent = item.name + " — " + (item.packSize || item.unit);
 
 const price = document.createElement("p");
 price.className = "muted";
@@ -816,32 +876,24 @@ plus.textContent = "+";
 plus.onclick = () => changeCartQuantity(item.id,1);
 
 const total = document.createElement("strong");
-total.textContent = money(item.quantity * item.price);
+total.textContent = money(item.price*item.quantity);
 
 controls.append(minus,count,plus,total);
 div.append(name,price,controls);
-container.appendChild(div);
+box.appendChild(div);
 });
 
-const total = cart.reduce(
-(sum,item) => sum + item.price * item.quantity,0
-);
-
+const total = cart.reduce((sum,x) => sum+x.price*x.quantity,0);
 el("billTotal").textContent = money(total);
 updatePaymentFields();
 }
 
 function updatePaymentFields(){
 const method = el("paymentMethod").value;
-
-el("customerField").classList.toggle(
-"hidden",method !== "Credit"
-);
+el("customerField").classList.toggle("hidden",method !== "Credit");
 
 if(method !== "Credit"){
-const total = cart.reduce(
-(sum,item) => sum + item.price * item.quantity,0
-);
+const total = cart.reduce((sum,x) => sum+x.price*x.quantity,0);
 el("amountPaid").value = total.toFixed(2);
 }
 }
@@ -856,22 +908,14 @@ const method = el("paymentMethod").value;
 const customer = el("customerName").value.trim();
 const rawPaid = el("amountPaid").value.trim();
 const paid = Number(rawPaid);
-
-const total = cart.reduce(
-(sum,item) => sum + item.price * item.quantity,0
-);
+const total = cart.reduce((sum,x) => sum+x.price*x.quantity,0);
 
 if(method === "Credit" && !customer){
 alert("Enter the customer name.");
 return;
 }
 
-if(
-rawPaid === "" ||
-!Number.isFinite(paid) ||
-paid < 0 ||
-paid > total
-){
+if(rawPaid === "" || !Number.isFinite(paid) || paid < 0 || paid > total){
 alert("Enter a valid amount paid.");
 return;
 }
@@ -884,19 +928,18 @@ return;
 el("saleMessage").className = "message";
 el("saleMessage").textContent =
 "Test bill completed! Total: " + money(total) +
-". Payment: " + method +
-". Nothing was saved to Google Sheets.";
+". Payment: " + method + ". Nothing saved to Google Sheets.";
 
 cart = [];
 renderCart();
 }
 
 function renderIncomingStock(){
-const container = el("stockItems");
-container.replaceChildren();
+const box = el("stockItems");
+box.replaceChildren();
 
 if(!incomingStock.length){
-container.textContent = "No products added yet.";
+box.textContent = "No products added yet.";
 return;
 }
 
@@ -909,20 +952,20 @@ row.className = "row";
 
 const label = document.createElement("span");
 label.textContent =
-item.name + " — " + item.quantity + " " + item.unit;
+item.name + " (" + (item.packSize || item.unit) + ") — " +
+item.quantity + " " + item.unit;
 
 const remove = document.createElement("button");
 remove.className = "secondary small";
 remove.textContent = "Remove";
-
 remove.onclick = () => {
-incomingStock = incomingStock.filter(p => p.id !== item.id);
+incomingStock = incomingStock.filter(x => x.id !== item.id);
 renderIncomingStock();
 };
 
 row.append(label,remove);
 div.appendChild(row);
-container.appendChild(div);
+box.appendChild(div);
 });
 }
 
@@ -933,16 +976,15 @@ return;
 }
 
 const supplier = el("supplierName").value.trim();
-
 if(!supplier){
-alert("Enter the supplier name.");
+alert("Enter supplier name.");
 return;
 }
 
 el("stockMessage").className = "message";
 el("stockMessage").textContent =
 "Test stock entry completed for " + supplier +
-". Nothing was saved to Google Sheets.";
+". Nothing saved to Google Sheets.";
 
 incomingStock = [];
 renderIncomingStock();
@@ -954,14 +996,10 @@ function onScanSuccess(decodedText){
 if(!loggedIn) return;
 
 const now = Date.now();
-
-if(decodedText === lastCode && now-lastScanTime < 3000){
-return;
-}
+if(decodedText === lastCode && now-lastScanTime < 3000) return;
 
 lastCode = decodedText;
 lastScanTime = now;
-
 el("barcodeInput").value = decodedText;
 lookupBarcode();
 
@@ -990,15 +1028,15 @@ onScanSuccess,
 );
 
 if(!loggedIn || scanner !== currentScanner){
-try{await currentScanner.stop();}catch(error){}
-try{currentScanner.clear();}catch(error){}
+try{await currentScanner.stop();}catch(e){}
+try{currentScanner.clear();}catch(e){}
 return;
 }
 
 scannerStarted = true;
 el("status").textContent = "Camera ready. Point at a barcode.";
-}catch(error){
-el("status").textContent = "Camera error: " + error.message;
+}catch(e){
+el("status").textContent = "Camera error: " + e.message;
 scanner = null;
 scannerStarted = false;
 }finally{
@@ -1006,23 +1044,18 @@ scannerStarting = false;
 }
 }
 
-// MANUAL BARCODE ENTRY
-
 el("barcodeInput").addEventListener("keydown",event => {
 if(event.key === "Enter") lookupBarcode();
 });
 
-// INITIALIZE
-
 renderCart();
 renderIncomingStock();
-
 window.addEventListener("load",initializeGoogleSignIn);
 
 if("serviceWorker" in navigator){
 window.addEventListener("load",() => {
 navigator.serviceWorker.register("./sw.js")
-.catch(error => console.warn("Service worker:",error));
+.catch(e => console.warn("Service worker:",e));
 });
 }
 </script>
