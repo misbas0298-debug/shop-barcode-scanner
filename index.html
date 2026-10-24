@@ -22,7 +22,7 @@ h1{text-align:center;font-size:25px;margin-bottom:5px}
 .subtitle{text-align:center;color:#687385;font-size:14px}
 .card{background:white;border-radius:14px;padding:16px;margin:14px 0;box-shadow:0 2px 9px #0000000d}
 .hidden{display:none!important}
-.notice{background:#fff3d7;color:#795400;border-radius:10px;padding:12px;text-align:center;font-size:13px}
+.notice{background:#fff3d7;color:#795400;border-radius:10px;padding:12px;text-align:center;font-size:13px;line-height:1.6}
 .muted{color:#687385;font-size:13px;line-height:1.5}
 button{border:0;border-radius:10px;padding:12px;font-size:15px;font-weight:bold;cursor:pointer}
 button:disabled{opacity:.5}
@@ -65,7 +65,7 @@ input,select{width:100%;padding:12px;border:1px solid #d6dce5;border-radius:9px;
 .section-heading{font-size:14px;color:#1769c2;margin-top:20px}
 .stack{display:grid;gap:9px}
 #labelPreview{width:100%;max-height:230px;object-fit:contain;border-radius:10px}
-#ocrText{white-space:pre-wrap;max-height:150px;overflow:auto;font-size:12px}
+#ocrText{white-space:pre-wrap;max-height:180px;overflow:auto;font-size:12px}
 </style>
 </head>
 
@@ -76,9 +76,10 @@ input,select{width:100%;padding:12px;border:1px solid #d6dce5;border-radius:9px;
 <p class="subtitle">Scan • Identify • Register • Sell • Add Stock</p>
 
 <div class="notice">
-<strong>TEST MODE</strong><br>
-No changes are made to Google Sheets.<br>
-Products and transactions are temporary.
+<strong>TEST MODE — PRODUCT RECOGNITION UPGRADE</strong><br>
+Google Sheets is not connected.<br>
+Products and transactions are temporary.<br>
+Always verify suggested product information.
 </div>
 
 <div id="loginSection" class="card login-box">
@@ -96,8 +97,8 @@ Products and transactions are temporary.
 <button class="secondary small" onclick="signOut()">Sign out</button>
 </div>
 <p class="muted">
-Google Sign-In is for testing. Secure server authorization
-is not connected yet.
+Google Sign-In is for testing only.
+Secure server authorization is not connected yet.
 </p>
 </div>
 
@@ -124,7 +125,7 @@ onclick="lookupBarcode()">Find Product</button>
 </div>
 
 <div id="productCard" class="card hidden">
-<h3>Product Found</h3>
+<h3>Product Found in Test Inventory</h3>
 <p id="productBarcode" class="muted"></p>
 <div id="productName" class="product-name"></div>
 <p id="productExtra" class="muted"></p>
@@ -150,22 +151,23 @@ onclick="addSelectedProduct()">Add to Bill</button>
 </div>
 
 <div id="unknownProductCard" class="card hidden">
-<h3>New Barcode Detected</h3>
+<h3>Product Identification</h3>
 <p id="unknownBarcodeText" class="muted"></p>
+
 <div id="lookupStatus" class="lookup-box">Searching...</div>
 <img id="lookupImage" class="product-image hidden" alt="Product photo">
 
 <div class="stack">
 <button id="registerBtn" class="success"
-onclick="openNewProductForm()">+ Register New Product</button>
+onclick="openNewProductForm()">Review & Register Product</button>
 
-<button id="labelButton" class="secondary"
+<button class="secondary"
 onclick="openLabelCamera()">📷 Scan Product Label</button>
 </div>
 
 <p class="muted">
-If the barcode database cannot identify a product,
-photograph the front label. The result must be checked.
+Database information is a suggestion, not a verified shop record.
+Use a front-label photo when information is missing or incorrect.
 </p>
 </div>
 
@@ -174,7 +176,8 @@ photograph the front label. The result must be checked.
 
 <p class="muted">
 Photograph the front of the packet in good light.
-Text recognition runs on your device using a downloaded OCR library.
+Keep the brand and product name visible.
+Photo recognition reads text on your device and may make mistakes.
 </p>
 
 <input id="labelFile" type="file"
@@ -201,7 +204,7 @@ onclick="closeLabelCamera()">Back</button>
 <h3>Confirm New Product</h3>
 
 <div id="autofillMessage" class="lookup-box">
-Review the details before saving.
+Review every detail before saving.
 </div>
 
 <h4 class="section-heading">Product Information</h4>
@@ -244,7 +247,7 @@ Review the details before saving.
 <div class="two-fields">
 <div class="field">
 <label for="newPackSize">Pack Size *</label>
-<input id="newPackSize" type="text" placeholder="50 g, 1 kg, 500 ml">
+<input id="newPackSize" type="text" placeholder="50 g, 1 kg, Pack of 3">
 </div>
 
 <div class="field">
@@ -269,7 +272,6 @@ Review the details before saving.
 <label for="newCost">Buying Price (₹) *</label>
 <input id="newCost" type="number" min="0" step="0.01">
 </div>
-
 <div class="field">
 <label for="newMrp">Printed MRP (₹)</label>
 <input id="newMrp" type="number" min="0" step="0.01">
@@ -281,7 +283,6 @@ Review the details before saving.
 <label for="newPrice">Selling Price (₹) *</label>
 <input id="newPrice" type="number" min="0" step="0.01">
 </div>
-
 <div class="field">
 <label for="newStock">Opening Stock *</label>
 <input id="newStock" type="number" min="0" step="1">
@@ -295,7 +296,7 @@ Review Product Details
 <div id="confirmPanel" class="hidden">
 <h4>Final Confirmation</h4>
 <div id="confirmDetails" class="confirm-box"></div>
-<p class="muted">Verify every field before saving.</p>
+<p class="muted">Verify every field against the actual product.</p>
 
 <button class="success" onclick="saveNewProduct()">
 Confirm & Save Product (Test)
@@ -347,7 +348,6 @@ Google Sheets is not updated.
 <button class="success" onclick="completeTestSale()">
 Complete Sale (Test Only)
 </button>
-
 <div id="saleMessage"></div>
 </div>
 
@@ -363,7 +363,6 @@ Complete Sale (Test Only)
 <button class="success" onclick="completeTestStock()">
 Save Stock Entry (Test Only)
 </button>
-
 <div id="stockMessage"></div>
 </div>
 
@@ -394,18 +393,22 @@ stock:7
 }];
 
 const DATABASES = [
-{
-url:"https://world.openfoodfacts.org",
-label:"Open Food Facts"
-},
-{
-url:"https://world.openbeautyfacts.org",
-label:"Open Beauty Facts"
-},
-{
-url:"https://world.openproductsfacts.org",
-label:"Open Products Facts"
-}
+{url:"https://world.openfoodfacts.org",label:"Open Food Facts"},
+{url:"https://world.openbeautyfacts.org",label:"Open Beauty Facts"},
+{url:"https://world.openproductsfacts.org",label:"Open Products Facts"}
+];
+
+const BRANDS = [
+"Head & Shoulders","Surf Excel","Clinic Plus","Stayfree",
+"Whisper","Sofy","Sirona","Pee Safe","Nua","Carmesi",
+"Dettol","Savlon","Comfort","Rin","Vim","Pril",
+"Colgate","Pepsodent","Sensodyne","Lifebuoy",
+"Lizol","Harpic","Ariel","Tide","Wheel",
+"Dove","Lux","Pears","Santoor","Sunsilk",
+"Parle","Britannia","Haldiram","Everest",
+"MDH","Tata","Patanjali","Dabur","Amul",
+"Nestle","Maggi","Kurkure","Lay's","Pampers",
+"Huggies","Surf","Nirma"
 ];
 
 let currentMode = "SELL";
@@ -427,67 +430,50 @@ let labelResult = null;
 let labelReading = false;
 
 function hideProductPanels(){
-[
-"productCard",
-"unknownProductCard",
-"newProductCard",
-"labelCard"
-].forEach(id => el(id).classList.add("hidden"));
+["productCard","unknownProductCard","newProductCard","labelCard"]
+.forEach(id=>el(id).classList.add("hidden"));
 }
 
 function cancelPendingLookup(){
 lookupSequence++;
 if(lookupController) lookupController.abort();
-lookupController = null;
-onlineProduct = null;
-onlineProductBarcode = "";
+lookupController=null;
+onlineProduct=null;
+onlineProductBarcode="";
 }
 
 function decodeJwtPayload(jwt){
-const parts = jwt.split(".");
-if(parts.length !== 3) throw Error("Invalid credential");
-
-const b64 = parts[1]
-.replace(/-/g,"+")
-.replace(/_/g,"/");
-
-const bytes = Array.from(atob(b64),c =>
-"%" + c.charCodeAt(0).toString(16).padStart(2,"0")
+const parts=jwt.split(".");
+if(parts.length!==3) throw Error("Invalid credential");
+const b64=parts[1].replace(/-/g,"+").replace(/_/g,"/");
+const bytes=Array.from(atob(b64),c=>
+"%"+c.charCodeAt(0).toString(16).padStart(2,"0")
 ).join("");
-
 return JSON.parse(decodeURIComponent(bytes));
 }
 
 function onGoogleSignIn(response){
 try{
 if(!response?.credential) throw Error("No credential received");
+const user=decodeJwtPayload(response.credential);
 
-const user = decodeJwtPayload(response.credential);
-
-if(user.aud !== CLIENT_ID || user.exp*1000 < Date.now()){
+if(user.aud!==CLIENT_ID || user.exp*1000<Date.now()){
 throw Error("Unexpected credential");
 }
 
-loggedIn = true;
-
-el("signedInUser").textContent =
-user.name || user.email || "Google user";
-
+loggedIn=true;
+el("signedInUser").textContent=user.name||user.email||"Google user";
 el("loginSection").classList.add("hidden");
 el("appSection").classList.remove("hidden");
-
 startScanner();
-
 }catch(e){
-el("loginStatus").textContent =
-"Sign-in failed: " + e.message;
+el("loginStatus").textContent="Sign-in failed: "+e.message;
 }
 }
 
 function initializeGoogleSignIn(){
 if(!window.google?.accounts?.id){
-el("loginStatus").textContent =
-"Google Sign-In did not load. Refresh.";
+el("loginStatus").textContent="Google Sign-In did not load. Refresh.";
 return;
 }
 
@@ -497,28 +483,21 @@ callback:onGoogleSignIn,
 auto_select:false
 });
 
-google.accounts.id.renderButton(
-el("googleSignIn"),
-{
-theme:"outline",
-size:"large",
-text:"signin_with"
-}
-);
+google.accounts.id.renderButton(el("googleSignIn"),{
+theme:"outline",size:"large",text:"signin_with"
+});
 
-el("loginStatus").textContent =
-"Use your Google account to continue.";
+el("loginStatus").textContent="Use your Google account to continue.";
 }
 
 async function signOut(){
-loggedIn = false;
+loggedIn=false;
 cancelPendingLookup();
-selectedProduct = null;
-cart = [];
-incomingStock = [];
-confirmedSnapshot = null;
-labelResult = null;
-
+selectedProduct=null;
+cart=[];
+incomingStock=[];
+confirmedSnapshot=null;
+labelResult=null;
 renderCart();
 renderIncomingStock();
 hideProductPanels();
@@ -530,89 +509,75 @@ if(window.google?.accounts?.id){
 google.accounts.id.disableAutoSelect();
 }
 
-const old = scanner;
-scanner = null;
-scannerStarted = false;
-
+const old=scanner;
+scanner=null;
+scannerStarted=false;
 if(old){
 try{await old.stop();}catch(e){}
 try{old.clear();}catch(e){}
 }
-
-el("loginStatus").textContent =
-"Signed out. Sign in again.";
+el("loginStatus").textContent="Signed out. Sign in again.";
 }
 
 function setMode(mode){
-if(mode !== "SELL" && mode !== "STOCK") return;
-
+if(mode!=="SELL"&&mode!=="STOCK") return;
 cancelPendingLookup();
-currentMode = mode;
-selectedProduct = null;
-confirmedSnapshot = null;
+currentMode=mode;
+selectedProduct=null;
+confirmedSnapshot=null;
 
 el("sellBtn").classList.toggle("active",mode==="SELL");
 el("stockBtn").classList.toggle("active",mode==="STOCK");
-
 el("sellSection").classList.toggle("hidden",mode!=="SELL");
 el("stockSection").classList.toggle("hidden",mode!=="STOCK");
 
 hideProductPanels();
-
-el("barcodeInput").value = "";
-el("status").textContent =
-mode==="SELL" ? "Sell mode ready." : "Add Stock mode ready.";
+el("barcodeInput").value="";
+el("status").textContent=mode==="SELL"?
+"Sell mode ready.":"Add Stock mode ready.";
 }
 
-// SMART CATEGORY DETECTION
+// CATEGORY DETECTION
+// Product type is checked before general brand names.
 
 function guessCategory(p,source=""){
-const tags = Array.isArray(p.categories_tags)
-? p.categories_tags.join(" ") : "";
+const tags=Array.isArray(p.categories_tags)?
+p.categories_tags.join(" "):"";
 
-const text = [
-p.product_name,
-p.product_name_en,
-p.brands,
-p.categories,
-p.generic_name,
-tags
+const text=[
+p.product_name,p.product_name_en,
+p.categories,p.generic_name,tags
 ].filter(Boolean).join(" ").toLowerCase();
 
-const has = pattern => pattern.test(text);
+const brand=String(p.brands||"").toLowerCase();
+const has=re=>re.test(text);
 
-// Specific product types take priority over brand names.
+if(has(/period pant|period underwear|menstrual underwear|menstrual pant|sanitary pant|period brief|period panties|period panty|sanitary pad|sanitary napkin|panty liner|pantyliner|menstrual cup|tampon|feminine hygiene|baby diaper|baby wipes|nappies|nappy|diaper/)){
+return "Baby & Feminine Care";
+}
 
-if(has(/toothpaste|toothbrush|mouthwash|oral care|dental|colgate|pepsodent|sensodyne/)){
+if(has(/toothpaste|toothbrush|mouthwash|oral care|dental floss|dental cream/)){
 return "Oral Care";
 }
 
-if(has(/dishwash|dish wash|dish washing|dishwashing|vim bar|vim liquid|pril/)){
+if(has(/dishwash|dish wash|dishwashing|dish washing|utensil cleaner|dish soap/)){
 return "Laundry & Dishwashing";
 }
 
-if(has(/fabric conditioner|fabric softener|laundry|washing powder|detergent|washing soap|rin|comfort|surf excel|ariel|tide|wheel detergent/)){
+if(has(/fabric conditioner|fabric softener|laundry|washing powder|detergent|washing soap|washing liquid|stain remover/)){
 return "Laundry & Dishwashing";
 }
 
-if(has(/toilet cleaner|floor cleaner|surface cleaner|bathroom cleaner|disinfectant floor|harpic|lizol|phenyl/)){
+if(has(/toilet cleaner|floor cleaner|surface cleaner|bathroom cleaner|phenyl|glass cleaner|disinfectant spray|household disinfectant/)){
 return "Home Cleaning";
 }
 
-if(has(/hand wash|handwash|hand soap|body wash|bathing soap|shampoo|conditioner|face wash|facewash|skin care|hair oil|deodorant|perfume|savlon|lifebuoy|lux soap|dove soap|pears soap|santoor/)){
+if(has(/hand wash|handwash|hand soap|body wash|bathing soap|shampoo|hair conditioner|face wash|facewash|skin care|hair oil|deodorant|perfume|antiseptic liquid|antiseptic solution|body lotion|hand sanitiz/)){
 return "Bath & Personal Care";
 }
 
-if(has(/antiseptic liquid|antiseptic solution|antiseptic cream/)){
-return "Bath & Personal Care";
-}
-
-if(has(/turmeric|haldi|chilli powder|chili powder|garam masala|masala|spice|jeera|cumin|coriander powder|dhaniya powder|pepper powder|seasoning/)){
+if(has(/turmeric|haldi|chilli powder|chili powder|garam masala|masala|spices?|jeera|cumin|coriander powder|dhaniya powder|pepper powder|seasoning/)){
 return "Masalas & Spices";
-}
-
-if(has(/baby food|baby lotion|diaper|nappy|sanitary pad|sanitary napkin|feminine hygiene/)){
-return "Baby & Feminine Care";
 }
 
 if(has(/dog food|cat food|pet food|pet care/)){
@@ -631,7 +596,7 @@ if(has(/juice|soft drink|cold drink|beverage|tea|coffee|drinking water|energy dr
 return "Beverages";
 }
 
-if(has(/biscuit|cookie|bhujia|namkeen|chips|snack|wafer|chocolate|candy|noodles|mixture|sev|kurkure|lays|parle.g|britannia biscuit/)){
+if(has(/biscuit|cookie|bhujia|namkeen|chips|snack|wafer|chocolate|candy|noodles|mixture|sev|kurkure/)){
 return "Packaged Foods & Snacks";
 }
 
@@ -639,7 +604,25 @@ if(has(/rice|poha|atta|wheat flour|besan|maida|dal|lentil|pulses|sugar|salt|edib
 return "Groceries & Staples";
 }
 
-if(source==="Open Beauty Facts"){
+// Use brand hints only if the product type was not identified.
+
+if(/whisper|stayfree|sofy|carmesi|pampers|huggies/.test(brand)){
+return "Baby & Feminine Care";
+}
+
+if(/colgate|pepsodent|sensodyne/.test(brand)){
+return "Oral Care";
+}
+
+if(/rin|comfort|surf excel|ariel|tide|wheel|nirma/.test(brand)){
+return "Laundry & Dishwashing";
+}
+
+if(/harpic|lizol/.test(brand)){
+return "Home Cleaning";
+}
+
+if(/savlon|dettol|lifebuoy|dove|lux|pears|santoor/.test(brand)){
 return "Bath & Personal Care";
 }
 
@@ -651,272 +634,416 @@ return "Other";
 }
 
 function guessUnit(p){
-const text = String(p.packaging||"").toLowerCase();
-
+const text=String(p.packaging||"").toLowerCase();
 if(/bottle/.test(text)) return "Bottle";
 if(/box|carton/.test(text)) return "Box";
 if(/pack|bag|sachet|wrapper/.test(text)) return "Pack";
-
 return "Piece";
 }
 
-// BARCODE LOOKUP
+function cleanText(value){
+return String(value||"").replace(/\s+/g," ").trim();
+}
+
+function isUsefulName(name){
+const s=cleanText(name);
+if(s.length<4 || s.length>120) return false;
+if(!/[a-zA-Z\u0900-\u097F]/.test(s)) return false;
+if(/^(unknown|product|not specified|no name|none|null|test)$/i.test(s)){
+return false;
+}
+return true;
+}
+
+// BARCODE CHECKSUM
+// A checksum only checks number structure, not product identity.
+
+function validGTIN(code){
+if(!/^\d{8}$|^\d{12,14}$/.test(code)) return false;
+let sum=0;
+let weight=3;
+for(let i=code.length-2;i>=0;i--){
+sum+=Number(code[i])*weight;
+weight=weight===3?1:3;
+}
+return (10-sum%10)%10===Number(code[code.length-1]);
+}
 
 function showLookupMessage(message,type="normal"){
-const box = el("lookupStatus");
-
-box.className = "lookup-box";
-
+const box=el("lookupStatus");
+box.className="lookup-box";
 if(type==="found") box.classList.add("lookup-found");
 if(type==="warning") box.classList.add("lookup-warning");
 if(type==="error") box.classList.add("lookup-error");
+box.textContent=message;
+}
 
-box.textContent = message;
+function normalizeDatabaseProduct(p,db,barcode){
+const returnedCode=cleanText(p.code);
+
+if(returnedCode && returnedCode!==barcode){
+return null;
+}
+
+const english=cleanText(p.product_name_en);
+const general=cleanText(p.product_name);
+
+const name=isUsefulName(english)?english:
+isUsefulName(general)?general:"";
+
+const brand=cleanText(p.brands).slice(0,90);
+
+if(!name) return null;
+
+return {
+name,
+brand,
+category:guessCategory(p,db.label),
+packSize:cleanText(p.quantity).slice(0,70),
+unit:guessUnit(p),
+image:cleanText(p.image_front_small_url),
+source:db.label,
+barcode,
+needsReview:true
+};
+}
+
+function productSimilarity(a,b){
+const norm=s=>cleanText(s).toLowerCase()
+.replace(/[^a-z0-9]+/g," ").trim();
+
+const x=norm(a.name);
+const y=norm(b.name);
+
+if(x===y) return true;
+
+const words=s=>s.split(" ").filter(w=>w.length>2);
+const aw=words(x);
+const bw=words(y);
+
+if(!aw.length||!bw.length) return false;
+
+const common=aw.filter(w=>bw.includes(w)).length;
+const overlap=common/Math.max(aw.length,bw.length);
+
+const brandA=norm(a.brand);
+const brandB=norm(b.brand);
+
+if(brandA&&brandB&&brandA!==brandB) return false;
+
+return overlap>=0.7;
+}
+
+function selectDatabaseSuggestion(results){
+if(!results.length) return null;
+
+const ranked=results.map(item=>({
+...item,
+score:results.filter(other=>productSimilarity(item,other)).length
+}));
+
+ranked.sort((a,b)=>
+b.score-a.score ||
+Number(Boolean(b.packSize))-Number(Boolean(a.packSize))
+);
+
+const best=ranked[0];
+
+const conflicting=results.some(item=>
+!productSimilarity(best,item)
+);
+
+return {
+...best,
+conflicting,
+sourceCount:best.score,
+allSources:results.map(x=>x.source)
+};
 }
 
 async function lookupBarcode(){
 if(!loggedIn) return;
 
-const barcode = el("barcodeInput").value.trim();
+const barcode=el("barcodeInput").value.trim();
 
 cancelPendingLookup();
-const seq = lookupSequence;
-
-selectedProduct = null;
+const seq=lookupSequence;
+selectedProduct=null;
 hideProductPanels();
 
 if(!barcode){
-el("status").textContent = "Please enter a barcode.";
+el("status").textContent="Please enter a barcode.";
 return;
 }
 
-const existing = testProducts.find(p=>p.barcode===barcode);
+const existing=testProducts.find(p=>p.barcode===barcode);
 
 if(existing){
-selectedProduct = existing;
-
-el("productBarcode").textContent =
-"Barcode: " + existing.barcode;
-
-el("productName").textContent = existing.name;
-
-el("productExtra").textContent =
-[
-existing.brand,
-existing.packSize,
-existing.category
+selectedProduct=existing;
+el("productBarcode").textContent="Barcode: "+existing.barcode;
+el("productName").textContent=existing.name;
+el("productExtra").textContent=[
+existing.brand,existing.packSize,existing.category
 ].filter(Boolean).join(" • ");
 
-el("productPrice").textContent = money(existing.price);
-
-el("productStock").textContent =
-existing.stock + " " + existing.unit;
-
-el("quantityInput").value = "1";
-
-el("addProductBtn").textContent =
-currentMode==="SELL" ? "Add to Bill" : "Add Incoming Stock";
+el("productPrice").textContent=money(existing.price);
+el("productStock").textContent=existing.stock+" "+existing.unit;
+el("quantityInput").value="1";
+el("addProductBtn").textContent=currentMode==="SELL"?
+"Add to Bill":"Add Incoming Stock";
 
 el("productCard").classList.remove("hidden");
-el("status").textContent = "Product found.";
-
+el("status").textContent="Product found in temporary test inventory.";
 return;
 }
 
-el("unknownBarcodeText").textContent =
-"Barcode: " + barcode;
-
+el("unknownBarcodeText").textContent="Barcode: "+barcode;
 el("unknownProductCard").classList.remove("hidden");
-
 el("lookupImage").classList.add("hidden");
 el("lookupImage").removeAttribute("src");
+el("registerBtn").disabled=false;
 
-el("registerBtn").disabled = true;
-
-if(!/^[0-9]{8,14}$/.test(barcode)){
+if(!/^\d{8}$|^\d{12,14}$/.test(barcode)){
 showLookupMessage(
-"Not a standard numeric retail barcode. Register manually or scan its label.",
+"Not a standard numeric retail barcode. You can register it manually or read the product label.",
 "warning"
 );
-el("registerBtn").disabled = false;
 return;
 }
 
-const controller = new AbortController();
-lookupController = controller;
+if(!validGTIN(barcode)){
+showLookupMessage(
+"Barcode checksum does not match a standard GTIN. Please recheck the number. You can still register manually.",
+"warning"
+);
+return;
+}
 
-let found = null;
-let successful = 0;
+const controller=new AbortController();
+lookupController=controller;
+const results=[];
+let successful=0;
 
 try{
 for(const db of DATABASES){
-if(seq!==lookupSequence) return;
+if(seq!==lookupSequence || !loggedIn) return;
 
 showLookupMessage("Searching "+db.label+"...");
 
 try{
-const url =
-db.url +
-"/api/v2/product/" +
-encodeURIComponent(barcode) +
-".json?fields=code,product_name,product_name_en,brands,categories,categories_tags,quantity,packaging,image_front_small_url,generic_name";
+const fields=[
+"code","product_name","product_name_en",
+"brands","categories","categories_tags",
+"quantity","packaging","image_front_small_url",
+"generic_name"
+].join(",");
 
-const response = await fetch(url,{
+const url=db.url+
+"/api/v2/product/"+
+encodeURIComponent(barcode)+
+".json?fields="+fields;
+
+const response=await fetch(url,{
 headers:{"Accept":"application/json"},
 signal:controller.signal
 });
 
 if(!response.ok) continue;
 
-const data = await response.json();
+const data=await response.json();
 successful++;
 
 if(seq!==lookupSequence || !loggedIn) return;
-
 if(el("barcodeInput").value.trim()!==barcode) return;
 
 if(data.status===1 && data.product){
-const p = data.product;
-
-const name = String(
-p.product_name_en || p.product_name || ""
-).trim();
-
-const brand = String(p.brands||"").trim();
-
-if(name || brand){
-found = {
-name,
-brand,
-category:guessCategory(p,db.label),
-packSize:String(p.quantity||"").trim(),
-unit:guessUnit(p),
-image:String(p.image_front_small_url||""),
-source:db.label
-};
-break;
-}
+const match=normalizeDatabaseProduct(
+data.product,db,barcode
+);
+if(match) results.push(match);
 }
 }catch(e){
 if(e.name==="AbortError") return;
-console.warn(db.label,e);
+console.warn("Lookup failed:",db.label,e);
 }
 }
 
 if(seq!==lookupSequence) return;
 
+const found=selectDatabaseSuggestion(results);
+
 if(found){
-onlineProduct = found;
-onlineProductBarcode = barcode;
+onlineProduct=found;
+onlineProductBarcode=barcode;
 
-showLookupMessage(
-"Found in "+found.source+": "+
-(found.name||found.brand)+
-". Review the details before registering.",
-"found"
-);
+let message="Database suggestion from "+
+found.source+": "+found.name+". ";
 
-if(/^https:\/\//.test(found.image)){
-el("lookupImage").src = found.image;
+if(found.conflicting){
+message+="WARNING: Database records disagree. ";
+}else if(found.sourceCount>1){
+message+="Multiple databases have similar names. ";
+}
+
+message+="NOT VERIFIED. Compare the actual packaging before registering.";
+
+showLookupMessage(message,
+found.conflicting?"warning":"found");
+
+if(/^https:\/\//i.test(found.image)){
+el("lookupImage").src=found.image;
 el("lookupImage").classList.remove("hidden");
 }
 
-el("status").textContent = "Online product found.";
-
+el("status").textContent="Product suggestion found. Confirmation required.";
 }else{
 showLookupMessage(
-successful
-? "No matching product record. Try Scan Product Label."
-: "Databases unavailable. Try Scan Product Label or register manually.",
-successful ? "warning" : "error"
+successful?
+"No reliable named product record found. Try Scan Product Label or register manually.":
+"Databases unavailable. Try Scan Product Label or register manually.",
+successful?"warning":"error"
 );
-
-el("status").textContent = "Product needs registration.";
+el("status").textContent="Product needs manual verification.";
 }
-
 }finally{
 if(seq===lookupSequence){
-lookupController = null;
-el("registerBtn").disabled = false;
+lookupController=null;
+el("registerBtn").disabled=false;
 }
 }
 }
 
-// PRODUCT LABEL PHOTO READING
+// PHOTO RECOGNITION
 
-function openLabelCamera(){
-if(!loggedIn) return;
+function findBrand(text){
+const lower=text.toLowerCase();
 
-if(!el("barcodeInput").value.trim()){
-alert("Scan the barcode first.");
-return;
+const found=BRANDS.find(brand=>{
+const escaped=brand.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+return new RegExp(
+"(^|[^a-z])"+escaped+"([^a-z]|$)","i"
+).test(lower);
+});
+
+return found||"";
 }
 
-el("unknownProductCard").classList.add("hidden");
-el("labelCard").classList.remove("hidden");
-
-el("ocrStatus").textContent =
-"Choose a clear front-label photo.";
-
-el("ocrText").classList.add("hidden");
-el("useLabelBtn").classList.add("hidden");
-el("labelPreview").classList.add("hidden");
-el("labelFile").value = "";
-
-labelResult = null;
-}
-
-function closeLabelCamera(){
-if(labelReading) return;
-
-el("labelCard").classList.add("hidden");
-el("unknownProductCard").classList.remove("hidden");
-}
-
-function inferLabelData(raw){
-const lines = raw
-.split(/\n+/)
-.map(x=>x.replace(/\s+/g," ").trim())
-.filter(x=>x.length>=3);
-
-const excluded =
-/^(mrp|mfg|exp|batch|net wt|net weight|customer care|ingredients|manufactured|marketed|fssai|best before|inclusive of|maximum retail|www\.)/i;
-
-const candidates = lines.filter(x=>
-!excluded.test(x) &&
-/[a-zA-Z]/.test(x) &&
-x.length<=65
+function detectPackSize(text){
+const count=text.match(
+/\b(?:pack\s*of|pack\s*x|contains)\s*(\d{1,3})\b/i
 );
 
-const name = candidates.slice(0,2).join(" ").slice(0,90);
+if(count){
+return "Pack of "+count[1];
+}
 
-const brands = [
-"Savlon","Comfort","Rin","Vim","Colgate",
-"Lifebuoy","Dettol","Surf Excel","Ariel",
-"Tide","Harpic","Lizol","Dove","Lux",
-"Pears","Santoor","Parle","Britannia",
-"Haldiram","Everest","MDH","Tata",
-"Patanjali","Dabur","Clinic Plus",
-"Sunsilk","Head & Shoulders","Pepsodent",
-"Sensodyne"
-];
-
-const brand = brands.find(b=>
-raw.toLowerCase().includes(b.toLowerCase())
-)||"";
-
-const sizeMatch = raw.match(
+const quantity=text.match(
 /\b(\d+(?:[.,]\d+)?)\s*(kg|kgs|kilograms?|grams?|gm|g|ml|millilit(?:er|re)s?|lit(?:er|re)s?|ltr|l)\b/i
 );
 
-const packSize = sizeMatch
-? sizeMatch[1].replace(",",".")+" "+sizeMatch[2]
-: "";
+if(quantity){
+return quantity[1].replace(",",".")+" "+quantity[2];
+}
 
-const category = guessCategory({
-product_name:name,
+const pieces=text.match(
+/\b(\d{1,3})\s*(?:pcs|pieces|pads|panties|pants|units)\b/i
+);
+
+if(pieces){
+return "Pack of "+pieces[1];
+}
+
+return "";
+}
+
+function detectProductType(text){
+const t=text.toLowerCase();
+
+const types=[
+[/period pant(?:y|ies)?|period underwear|menstrual underwear|menstrual pant(?:y|ies)?/,"Period Panty"],
+[/sanitary napkin|sanitary pad/,"Sanitary Pads"],
+[/panty liner|pantyliner/,"Panty Liners"],
+[/baby diaper|diaper pants|diapers/,"Diapers"],
+[/fabric conditioner|fabric softener/,"Fabric Conditioner"],
+[/detergent powder|washing powder/,"Detergent Powder"],
+[/detergent liquid|liquid detergent/,"Liquid Detergent"],
+[/dishwash liquid|dishwashing liquid/,"Dishwash Liquid"],
+[/dishwash bar/,"Dishwash Bar"],
+[/hand wash|handwash/,"Hand Wash"],
+[/antiseptic liquid/,"Antiseptic Liquid"],
+[/toilet cleaner/,"Toilet Cleaner"],
+[/floor cleaner/,"Floor Cleaner"],
+[/toothpaste|dental cream/,"Toothpaste"],
+[/toothbrush/,"Toothbrush"],
+[/body wash/,"Body Wash"],
+[/face wash|facewash/,"Face Wash"],
+[/shampoo/,"Shampoo"],
+[/hair oil/,"Hair Oil"],
+[/bath(?:ing)? soap|soap bar/,"Bathing Soap"],
+[/biscuit|cookies?/,"Biscuits"],
+[/potato chips|chips/,"Chips"],
+[/bhujia/,"Bhujia"],
+[/namkeen/,"Namkeen"],
+[/instant noodles|noodles/,"Noodles"],
+[/garam masala/,"Garam Masala"],
+[/turmeric|haldi/,"Turmeric Powder"],
+[/chilli powder|chili powder/,"Chilli Powder"],
+[/coriander powder|dhaniya powder/,"Coriander Powder"]
+];
+
+for(const [pattern,name] of types){
+if(pattern.test(t)) return name;
+}
+
+return "";
+}
+
+function isPackagingNoise(line){
+return /^(mrp|m\.?r\.?p|mfg|exp|batch|net wt|net weight|customer care|ingredients|manufactured|marketed|fssai|best before|inclusive of|maximum retail|www\.|email|helpline|storage|directions|usage|warning|caution|address|license|licence|packed by|distributed by|nutrition|nutritional|composition|barcode|expiry|date of|for external use|keep away|how to use)/i.test(line) ||
+/\b(ingredients|customer care|manufactured by|marketed by|nutritional information|maximum retail price|consumer care|best before|batch no|expiry date)\b/i.test(line) ||
+/^\d[\d\s.,:/%-]*$/.test(line);
+}
+
+function inferLabelData(raw){
+const lines=raw.split(/\n+/)
+.map(x=>x.replace(/\s+/g," ").trim())
+.filter(x=>x.length>=3);
+
+const brand=findBrand(raw);
+const type=detectProductType(raw);
+const packSize=detectPackSize(raw);
+
+const candidates=lines.filter(line=>
+!isPackagingNoise(line) &&
+/[a-zA-Z]/.test(line) &&
+line.length<=55 &&
+line.split(" ").length<=9
+);
+
+let name="";
+let confidence="Low";
+
+if(type){
+name=brand?brand+" "+type:type;
+confidence=brand?"Medium":"Low";
+}else{
+const likely=candidates.find(line=>
+brand && line.toLowerCase().includes(brand.toLowerCase())
+);
+
+if(likely && likely.length<=45){
+name=likely;
+confidence="Low";
+}
+}
+
+// Do not fill a random first line as the product name.
+// A blank name is safer than a confidently incorrect name.
+
+const category=guessCategory({
+product_name:type,
 brands:brand,
-categories:raw
+categories:type
 },"Label photo");
 
 return {
@@ -925,14 +1052,39 @@ brand,
 packSize,
 category,
 unit:/ml|lit|ltr/i.test(packSize)?"Bottle":"Pack",
-source:"Label photo"
+source:"Label photo OCR",
+confidence,
+raw
 };
 }
 
-async function readLabelPhoto(event){
-const file = event.target.files?.[0];
+function openLabelCamera(){
+if(!loggedIn) return;
 
-if(!file || labelReading) return;
+if(!el("barcodeInput").value.trim()){
+alert("Scan or enter the barcode first.");
+return;
+}
+
+el("unknownProductCard").classList.add("hidden");
+el("labelCard").classList.remove("hidden");
+el("ocrStatus").textContent="Choose a clear front-label photo.";
+el("ocrText").classList.add("hidden");
+el("useLabelBtn").classList.add("hidden");
+el("labelPreview").classList.add("hidden");
+el("labelFile").value="";
+labelResult=null;
+}
+
+function closeLabelCamera(){
+if(labelReading) return;
+el("labelCard").classList.add("hidden");
+el("unknownProductCard").classList.remove("hidden");
+}
+
+async function readLabelPhoto(event){
+const file=event.target.files?.[0];
+if(!file||labelReading) return;
 
 if(!file.type.startsWith("image/")){
 alert("Please choose an image.");
@@ -944,18 +1096,15 @@ alert("Choose a photo smaller than 12 MB.");
 return;
 }
 
-labelReading = true;
-labelResult = null;
-
+labelReading=true;
+labelResult=null;
 el("useLabelBtn").classList.add("hidden");
 el("ocrText").classList.add("hidden");
+el("ocrStatus").textContent=
+"Reading packaging text. First use may take a minute...";
 
-el("ocrStatus").textContent =
-"Reading label text. First use may take a minute...";
-
-const imageUrl = URL.createObjectURL(file);
-
-el("labelPreview").src = imageUrl;
+const imageUrl=URL.createObjectURL(file);
+el("labelPreview").src=imageUrl;
 el("labelPreview").classList.remove("hidden");
 
 try{
@@ -963,106 +1112,121 @@ if(!window.Tesseract){
 throw Error("OCR library could not load. Check internet.");
 }
 
-const result = await Tesseract.recognize(file,"eng");
-
-const raw = String(result?.data?.text||"").trim();
+const result=await Tesseract.recognize(file,"eng");
+const raw=String(result?.data?.text||"").trim();
 
 if(!raw){
 throw Error("No readable text found. Try a clearer photo.");
 }
 
-labelResult = inferLabelData(raw);
+labelResult=inferLabelData(raw);
 
-el("ocrStatus").textContent =
-"Text detected. These details are suggestions. Please check everything.";
+let message="Photo reading complete. ";
 
-el("ocrText").textContent =
-"Text read from label:\n"+raw.slice(0,1400);
+if(labelResult.name){
+message+="Possible product: "+labelResult.name+". ";
+}else{
+message+="Product name could not be identified reliably. ";
+}
+
+message+="Confidence: "+labelResult.confidence+
+". Review the original package carefully.";
+
+el("ocrStatus").textContent=message;
+el("ocrText").textContent=
+"Text read from label:\n"+raw.slice(0,2000);
 
 el("ocrText").classList.remove("hidden");
 el("useLabelBtn").classList.remove("hidden");
 
 }catch(e){
-el("ocrStatus").textContent =
+el("ocrStatus").textContent=
 "Could not read label: "+e.message+
 ". Try again or register manually.";
 }finally{
-labelReading = false;
+labelReading=false;
 setTimeout(()=>URL.revokeObjectURL(imageUrl),60000);
 }
 }
 
 function useLabelResult(){
 if(!labelResult) return;
-fillProductForm(labelResult,"label photo OCR");
+
+const barcode=el("barcodeInput").value.trim();
+const db=onlineProductBarcode===barcode?onlineProduct:null;
+
+const combined={
+name:labelResult.name||"",
+brand:labelResult.brand||db?.brand||"",
+category:labelResult.category!=="Other"?
+labelResult.category:(db?.category||""),
+packSize:labelResult.packSize||db?.packSize||"",
+unit:labelResult.unit||db?.unit||"Piece"
+};
+
+// A conflicting database name is not silently substituted.
+// User must review the packaging.
+
+fillProductForm(combined,"label photo OCR");
 }
 
-// PRODUCT REGISTRATION
+// REGISTRATION
 
 function openNewProductForm(){
-const barcode = el("barcodeInput").value.trim();
+const barcode=el("barcodeInput").value.trim();
 
 if(!barcode){
 alert("Enter a barcode first.");
 return;
 }
 
-const match =
-onlineProductBarcode===barcode ? onlineProduct : null;
-
+const match=onlineProductBarcode===barcode?onlineProduct:null;
 fillProductForm(match,match?.source||"manual entry");
 }
 
 function fillProductForm(match,source){
-const barcode = el("barcodeInput").value.trim();
-
+const barcode=el("barcodeInput").value.trim();
 hideProductPanels();
-
-confirmedSnapshot = null;
+confirmedSnapshot=null;
 el("confirmPanel").classList.add("hidden");
 
-el("newBarcode").value = barcode;
-el("newName").value = match?.name||"";
-el("newBrand").value = match?.brand||"";
-el("newCategory").value = match?.category||"";
-el("newPackSize").value = match?.packSize||"";
-el("newUnit").value = match?.unit||"Piece";
+el("newBarcode").value=barcode;
+el("newName").value=match?.name||"";
+el("newBrand").value=match?.brand||"";
+el("newCategory").value=match?.category||"";
+el("newPackSize").value=match?.packSize||"";
+el("newUnit").value=match?.unit||"Piece";
 
-el("newCost").value = "";
-el("newMrp").value = "";
-el("newPrice").value = "";
-el("newStock").value = "";
+el("newCost").value="";
+el("newMrp").value="";
+el("newPrice").value="";
+el("newStock").value="";
 
-const message = el("autofillMessage");
+const message=el("autofillMessage");
+message.className="lookup-box lookup-warning";
 
-message.className =
-"lookup-box "+(match?"lookup-found":"lookup-warning");
-
-message.textContent = match
-? "Details suggested from "+source+
-". Verify product name, category and pack size, then enter prices and stock."
-: "Enter the product details manually.";
+message.textContent=match?
+"UNVERIFIED suggestion from "+source+
+". Check the actual product name, brand, category and pack size. Correct anything inaccurate. Then enter prices and stock.":
+"No reliable automatic match. Enter product details from the packaging.";
 
 el("newProductCard").classList.remove("hidden");
-
 el("newProductCard").scrollIntoView({
-behavior:"smooth",
-block:"start"
+behavior:"smooth",block:"start"
 });
 }
 
 function cancelNewProduct(){
-confirmedSnapshot = null;
-
+confirmedSnapshot=null;
 el("newProductCard").classList.add("hidden");
 el("unknownProductCard").classList.remove("hidden");
 }
 
 function readProductForm(){
-const rawCost = el("newCost").value.trim();
-const rawMrp = el("newMrp").value.trim();
-const rawPrice = el("newPrice").value.trim();
-const rawStock = el("newStock").value.trim();
+const rawCost=el("newCost").value.trim();
+const rawMrp=el("newMrp").value.trim();
+const rawPrice=el("newPrice").value.trim();
+const rawStock=el("newStock").value.trim();
 
 return {
 barcode:el("newBarcode").value.trim(),
@@ -1079,13 +1243,7 @@ stock:rawStock===""?NaN:Number(rawStock)
 }
 
 function validateProduct(p){
-if(
-!p.barcode ||
-!p.name ||
-!p.category ||
-!p.packSize ||
-!p.unit
-){
+if(!p.barcode||!p.name||!p.category||!p.packSize||!p.unit){
 alert("Complete all required product details.");
 return false;
 }
@@ -1096,17 +1254,16 @@ return false;
 }
 
 if(
-!Number.isFinite(p.cost) || p.cost<0 ||
-!Number.isFinite(p.price) || p.price<0 ||
-!Number.isInteger(p.stock) || p.stock<0 ||
-(p.mrp!==null &&
-(!Number.isFinite(p.mrp)||p.mrp<0))
+!Number.isFinite(p.cost)||p.cost<0||
+!Number.isFinite(p.price)||p.price<0||
+!Number.isInteger(p.stock)||p.stock<0||
+(p.mrp!==null&&(!Number.isFinite(p.mrp)||p.mrp<0))
 ){
 alert("Enter valid prices and whole-number stock.");
 return false;
 }
 
-if(p.mrp!==null && p.price>p.mrp){
+if(p.mrp!==null&&p.price>p.mrp){
 alert("Selling price cannot exceed printed MRP.");
 return false;
 }
@@ -1115,14 +1272,14 @@ return true;
 }
 
 function addConfirmLine(box,label,value){
-const line = document.createElement("div");
-line.className = "confirm-line";
+const line=document.createElement("div");
+line.className="confirm-line";
 
-const left = document.createElement("span");
-left.textContent = label;
+const left=document.createElement("span");
+left.textContent=label;
 
-const right = document.createElement("strong");
-right.textContent = String(value);
+const right=document.createElement("strong");
+right.textContent=String(value);
 
 line.append(left,right);
 box.append(line);
@@ -1131,13 +1288,12 @@ box.append(line);
 function previewNewProduct(){
 if(!loggedIn) return;
 
-const p = readProductForm();
-
+const p=readProductForm();
 if(!validateProduct(p)) return;
 
-confirmedSnapshot = JSON.stringify(p);
+confirmedSnapshot=JSON.stringify(p);
 
-const box = el("confirmDetails");
+const box=el("confirmDetails");
 box.replaceChildren();
 
 addConfirmLine(box,"Product",p.name);
@@ -1147,42 +1303,32 @@ addConfirmLine(box,"Category",p.category);
 addConfirmLine(box,"Pack Size",p.packSize);
 addConfirmLine(box,"Stock Unit",p.unit);
 addConfirmLine(box,"Buying Price",money(p.cost));
-addConfirmLine(
-box,
-"MRP",
-p.mrp===null?"Not entered":money(p.mrp)
-);
+addConfirmLine(box,"MRP",
+p.mrp===null?"Not entered":money(p.mrp));
 addConfirmLine(box,"Selling Price",money(p.price));
 addConfirmLine(box,"Opening Stock",p.stock);
 addConfirmLine(box,"Profit per Unit",money(p.price-p.cost));
-addConfirmLine(
-box,
-"Total Purchase Value",
-money(p.cost*p.stock)
-);
+addConfirmLine(box,"Total Purchase Value",
+money(p.cost*p.stock));
 
 el("confirmPanel").classList.remove("hidden");
-
 el("confirmPanel").scrollIntoView({
-behavior:"smooth",
-block:"start"
+behavior:"smooth",block:"start"
 });
 }
 
 function hideConfirmation(){
-confirmedSnapshot = null;
+confirmedSnapshot=null;
 el("confirmPanel").classList.add("hidden");
 }
 
 function saveNewProduct(){
 if(!loggedIn) return;
 
-const p = readProductForm();
+const p=readProductForm();
 
-if(
-!confirmedSnapshot ||
-JSON.stringify(p)!==confirmedSnapshot
-){
+if(!confirmedSnapshot||
+JSON.stringify(p)!==confirmedSnapshot){
 hideConfirmation();
 alert("Details changed. Review and confirm again.");
 return;
@@ -1196,10 +1342,9 @@ Math.random().toString(36).slice(2,8),
 ...p
 });
 
-confirmedSnapshot = null;
+confirmedSnapshot=null;
 cancelPendingLookup();
-
-el("barcodeInput").value = p.barcode;
+el("barcodeInput").value=p.barcode;
 lookupBarcode();
 
 alert(
@@ -1220,18 +1365,18 @@ alert("Select a product first.");
 return;
 }
 
-const quantity = Number(el("quantityInput").value);
+const quantity=Number(el("quantityInput").value);
 
 if(!Number.isInteger(quantity)||quantity<=0){
 alert("Enter a valid whole-number quantity.");
 return;
 }
 
-const product = selectedProduct;
+const product=selectedProduct;
 
 if(currentMode==="SELL"){
-const existing = cart.find(x=>x.id===product.id);
-const current = existing?existing.quantity:0;
+const existing=cart.find(x=>x.id===product.id);
+const current=existing?existing.quantity:0;
 
 if(current+quantity>product.stock){
 alert("Not enough stock. Available: "+product.stock);
@@ -1243,37 +1388,31 @@ existing.quantity+=quantity;
 }else{
 cart.push({...product,quantity});
 }
-
 renderCart();
-
 }else{
-const existing = incomingStock.find(x=>x.id===product.id);
-
+const existing=incomingStock.find(x=>x.id===product.id);
 if(existing){
 existing.quantity+=quantity;
 }else{
 incomingStock.push({...product,quantity});
 }
-
 renderIncomingStock();
 }
 
-selectedProduct = null;
+selectedProduct=null;
 hideProductPanels();
-
-el("barcodeInput").value = "";
-el("status").textContent =
-"Product added. Scan the next barcode.";
+el("barcodeInput").value="";
+el("status").textContent="Product added. Scan the next barcode.";
 }
 
 function changeCartQuantity(id,change){
-const item = cart.find(x=>x.id===id);
+const item=cart.find(x=>x.id===id);
 if(!item) return;
 
-const next = item.quantity+change;
+const next=item.quantity+change;
 
 if(next<=0){
-cart = cart.filter(x=>x.id!==id);
+cart=cart.filter(x=>x.id!==id);
 }else if(next<=item.stock){
 item.quantity=next;
 }else{
@@ -1284,71 +1423,67 @@ renderCart();
 }
 
 function renderCart(){
-const box = el("cartItems");
+const box=el("cartItems");
 box.replaceChildren();
 
 if(!cart.length){
-box.textContent = "No products added yet.";
+box.textContent="No products added yet.";
 }
 
 cart.forEach(item=>{
-const div = document.createElement("div");
-div.className = "cart-item";
+const div=document.createElement("div");
+div.className="cart-item";
 
-const name = document.createElement("strong");
-name.textContent =
-item.name+" — "+(item.packSize||item.unit);
+const name=document.createElement("strong");
+name.textContent=item.name+" — "+(item.packSize||item.unit);
 
-const price = document.createElement("p");
-price.className = "muted";
-price.textContent =
-money(item.price)+" per "+item.unit;
+const price=document.createElement("p");
+price.className="muted";
+price.textContent=money(item.price)+" per "+item.unit;
 
-const controls = document.createElement("div");
-controls.className = "qty-controls";
+const controls=document.createElement("div");
+controls.className="qty-controls";
 
-const minus = document.createElement("button");
-minus.className = "secondary small";
-minus.textContent = "−";
-minus.onclick = ()=>changeCartQuantity(item.id,-1);
+const minus=document.createElement("button");
+minus.className="secondary small";
+minus.textContent="−";
+minus.onclick=()=>changeCartQuantity(item.id,-1);
 
-const count = document.createElement("strong");
-count.textContent = item.quantity;
+const count=document.createElement("strong");
+count.textContent=item.quantity;
 
-const plus = document.createElement("button");
-plus.className = "secondary small";
-plus.textContent = "+";
-plus.onclick = ()=>changeCartQuantity(item.id,1);
+const plus=document.createElement("button");
+plus.className="secondary small";
+plus.textContent="+";
+plus.onclick=()=>changeCartQuantity(item.id,1);
 
-const total = document.createElement("strong");
-total.textContent = money(item.price*item.quantity);
+const total=document.createElement("strong");
+total.textContent=money(item.price*item.quantity);
 
 controls.append(minus,count,plus,total);
 div.append(name,price,controls);
 box.append(div);
 });
 
-const total = cart.reduce(
+const total=cart.reduce(
 (sum,x)=>sum+x.price*x.quantity,0
 );
 
-el("billTotal").textContent = money(total);
+el("billTotal").textContent=money(total);
 updatePaymentFields();
 }
 
 function updatePaymentFields(){
-const method = el("paymentMethod").value;
-
+const method=el("paymentMethod").value;
 el("customerField").classList.toggle(
 "hidden",method!=="Credit"
 );
 
 if(method!=="Credit"){
-const total = cart.reduce(
+const total=cart.reduce(
 (sum,x)=>sum+x.price*x.quantity,0
 );
-
-el("amountPaid").value = total.toFixed(2);
+el("amountPaid").value=total.toFixed(2);
 }
 }
 
@@ -1358,12 +1493,12 @@ alert("Add products to the bill first.");
 return;
 }
 
-const method = el("paymentMethod").value;
-const customer = el("customerName").value.trim();
-const rawPaid = el("amountPaid").value.trim();
-const paid = Number(rawPaid);
+const method=el("paymentMethod").value;
+const customer=el("customerName").value.trim();
+const rawPaid=el("amountPaid").value.trim();
+const paid=Number(rawPaid);
 
-const total = cart.reduce(
+const total=cart.reduce(
 (sum,x)=>sum+x.price*x.quantity,0
 );
 
@@ -1372,68 +1507,55 @@ alert("Enter customer name.");
 return;
 }
 
-if(
-rawPaid==="" ||
-!Number.isFinite(paid) ||
-paid<0 ||
-paid>total
-){
+if(rawPaid===""||!Number.isFinite(paid)||paid<0||paid>total){
 alert("Enter a valid amount paid.");
 return;
 }
 
-if(
-method!=="Credit" &&
-Math.abs(paid-total)>.005
-){
+if(method!=="Credit"&&Math.abs(paid-total)>.005){
 alert("Cash and Paytm must be paid in full.");
 return;
 }
 
-el("saleMessage").className = "message";
-
-el("saleMessage").textContent =
-"Test bill completed! Total: "+
-money(total)+
+el("saleMessage").className="message";
+el("saleMessage").textContent=
+"Test bill completed! Total: "+money(total)+
 ". Payment: "+method+
 ". Nothing saved to Google Sheets.";
 
-cart = [];
+cart=[];
 renderCart();
 }
 
 // STOCK
 
 function renderIncomingStock(){
-const box = el("stockItems");
+const box=el("stockItems");
 box.replaceChildren();
 
 if(!incomingStock.length){
-box.textContent = "No products added yet.";
+box.textContent="No products added yet.";
 return;
 }
 
 incomingStock.forEach(item=>{
-const div = document.createElement("div");
-div.className = "cart-item";
+const div=document.createElement("div");
+div.className="cart-item";
 
-const row = document.createElement("div");
-row.className = "row";
+const row=document.createElement("div");
+row.className="row";
 
-const label = document.createElement("span");
-label.textContent =
-item.name+" ("+
-(item.packSize||item.unit)+
-") — "+item.quantity+" "+item.unit;
+const label=document.createElement("span");
+label.textContent=item.name+" ("+
+(item.packSize||item.unit)+") — "+
+item.quantity+" "+item.unit;
 
-const remove = document.createElement("button");
-remove.className = "secondary small";
-remove.textContent = "Remove";
+const remove=document.createElement("button");
+remove.className="secondary small";
+remove.textContent="Remove";
 
-remove.onclick = ()=>{
-incomingStock = incomingStock.filter(
-x=>x.id!==item.id
-);
+remove.onclick=()=>{
+incomingStock=incomingStock.filter(x=>x.id!==item.id);
 renderIncomingStock();
 };
 
@@ -1449,21 +1571,19 @@ alert("Add at least one product.");
 return;
 }
 
-const supplier = el("supplierName").value.trim();
+const supplier=el("supplierName").value.trim();
 
 if(!supplier){
 alert("Enter supplier name.");
 return;
 }
 
-el("stockMessage").className = "message";
-
-el("stockMessage").textContent =
-"Test stock entry completed for "+
-supplier+
+el("stockMessage").className="message";
+el("stockMessage").textContent=
+"Test stock entry completed for "+supplier+
 ". Nothing saved to Google Sheets.";
 
-incomingStock = [];
+incomingStock=[];
 renderIncomingStock();
 }
 
@@ -1472,94 +1592,78 @@ renderIncomingStock();
 function onScanSuccess(code){
 if(!loggedIn) return;
 
-// Do not interrupt product registration or label reading.
+// Do not interrupt registration or photo reading.
 if(
-!el("newProductCard").classList.contains("hidden") ||
-!el("labelCard").classList.contains("hidden") ||
+!el("newProductCard").classList.contains("hidden")||
+!el("labelCard").classList.contains("hidden")||
 !el("unknownProductCard").classList.contains("hidden")
 ){
 return;
 }
 
-const now = Date.now();
+const now=Date.now();
 
-if(code===lastCode && now-lastScanTime<3000){
+if(code===lastCode&&now-lastScanTime<3000){
 return;
 }
 
-lastCode = code;
-lastScanTime = now;
-
-el("barcodeInput").value = code;
+lastCode=code;
+lastScanTime=now;
+el("barcodeInput").value=code;
 lookupBarcode();
 
 if(navigator.vibrate) navigator.vibrate(100);
 }
 
 async function startScanner(){
-if(!loggedIn || scannerStarted || scannerStarting) return;
+if(!loggedIn||scannerStarted||scannerStarting) return;
 
 if(typeof Html5Qrcode==="undefined"){
-el("status").textContent =
-"Scanner library could not load.";
+el("status").textContent="Scanner library could not load.";
 return;
 }
 
-scannerStarting = true;
+scannerStarting=true;
 
 try{
-const currentScanner = new Html5Qrcode("reader");
-scanner = currentScanner;
+const currentScanner=new Html5Qrcode("reader");
+scanner=currentScanner;
 
 await currentScanner.start(
 {facingMode:"environment"},
-{
-fps:10,
-qrbox:{width:250,height:150}
-},
+{fps:10,qrbox:{width:250,height:150}},
 onScanSuccess,
 ()=>{}
 );
 
-if(!loggedIn || scanner!==currentScanner){
+if(!loggedIn||scanner!==currentScanner){
 try{await currentScanner.stop();}catch(e){}
 try{currentScanner.clear();}catch(e){}
 return;
 }
 
-scannerStarted = true;
-
-el("status").textContent =
-"Camera ready. Point at a barcode.";
+scannerStarted=true;
+el("status").textContent="Camera ready. Point at a barcode.";
 
 }catch(e){
-el("status").textContent =
-"Camera error: "+e.message;
-
-scanner = null;
-scannerStarted = false;
-
+el("status").textContent="Camera error: "+e.message;
+scanner=null;
+scannerStarted=false;
 }finally{
-scannerStarting = false;
+scannerStarting=false;
 }
 }
 
 // STARTUP
 
-el("barcodeInput").addEventListener(
-"keydown",
-event=>{
+el("barcodeInput").addEventListener("keydown",event=>{
 if(event.key==="Enter") lookupBarcode();
-}
-);
+});
 
 renderCart();
 renderIncomingStock();
 
-window.addEventListener(
-"load",
-initializeGoogleSignIn
-);
+window.addEventListener("load",initializeGoogleSignIn);
 
 if("serviceWorker" in navigator){
 window.addEventListener("load",()=>{
