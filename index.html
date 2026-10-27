@@ -151,10 +151,9 @@ Sales and stock transactions are still test-only.
 <h3>Confirm New Product</h3>
 <div id="autofillMessage" class="lookup-box">Review every detail before saving.</div>
 <h4 class="section-heading">Product Information</h4>
-
-<div class="field"><label for="newBarcode">Barcode *</label><input id="newBarcode" type="text"></div>
-<div class="field"><label for="newName">Product Name *</label><input id="newName" type="text"></div>
-<div class="field"><label for="newBrand">Brand</label><input id="newBrand" type="text"></div>
+<div class="field"><label for="newBarcode">Barcode *</label><input id="newBarcode"></div>
+<div class="field"><label for="newName">Product Name *</label><input id="newName"></div>
+<div class="field"><label for="newBrand">Brand</label><input id="newBrand"></div>
 <div class="field">
 <label for="newCategory">Category *</label>
 <select id="newCategory">
@@ -185,7 +184,6 @@ Sales and stock transactions are still test-only.
 </select>
 </div>
 </div>
-
 <h4 class="section-heading">Pricing & Stock</h4>
 <div class="two-fields">
 <div class="field"><label for="newCost">Buying Price (₹) *</label><input id="newCost" type="number" min="0" step=".01"></div>
@@ -196,7 +194,6 @@ Sales and stock transactions are still test-only.
 <div class="field"><label for="newStock">Opening Stock *</label><input id="newStock" type="number" min="0" step="1"></div>
 </div>
 <button class="primary" onclick="previewNewProduct()">Review Product Details</button>
-
 <div id="confirmPanel" class="hidden">
 <h4>Final Confirmation</h4>
 <div id="confirmDetails" class="confirm-box"></div>
@@ -204,7 +201,6 @@ Sales and stock transactions are still test-only.
 <button id="saveProductButton" class="success" onclick="saveNewProduct()">Confirm & Save Product to Google Sheets</button>
 <button class="secondary" style="width:100%;margin-top:10px" onclick="hideConfirmation()">Edit Details</button>
 </div>
-
 <button class="secondary" style="width:100%;margin-top:10px" onclick="cancelNewProduct()">Cancel Registration</button>
 </div>
 
@@ -291,41 +287,34 @@ let labelReading = false;
 let inventoryProducts = [];
 let inventoryConnected = false;
 
-let bridgeFrame = null;
+// ==========================================
+// FORM POST CONNECTION TO APPS SCRIPT
+// ==========================================
+
 const bridgeRequests = new Map();
-
-function initializeScannerBridge() {
-  if (bridgeFrame) return;
-
-  bridgeFrame = document.createElement("iframe");
-  bridgeFrame.src = BACKEND_URL;
-  bridgeFrame.style.display = "none";
-  bridgeFrame.title = "Scanner inventory connection";
-  document.body.appendChild(bridgeFrame);
-}
+let transportSequence = 0;
 
 window.addEventListener("message", event => {
-  if (event.source !== bridgeFrame?.contentWindow) return;
+  const data = event.data;
+
+  if (!data || data.type !== "SHOP_SCANNER_POST_RESPONSE") return;
 
   if (
     event.origin !== "https://script.google.com" &&
     !/^https:\/\/[a-z0-9.-]+\.googleusercontent\.com$/i.test(event.origin)
   ) return;
 
-  const data = event.data;
-  if (data?.type !== "SHOP_SCANNER_RESPONSE") return;
-
   const pending = bridgeRequests.get(data.id);
   if (!pending) return;
 
+  if (event.source !== pending.frame.contentWindow) return;
+
   bridgeRequests.delete(data.id);
   clearTimeout(pending.timer);
+  pending.frame.remove();
 
-  if (data.error) {
-    pending.reject(new Error(data.error));
-  } else {
-    pending.resolve(data.result);
-  }
+  if (data.error) pending.reject(new Error(data.error));
+  else pending.resolve(data.result);
 });
 
 function scannerApi(action, details = {}) {
@@ -333,40 +322,57 @@ function scannerApi(action, details = {}) {
     return Promise.reject(new Error("Please sign in again."));
   }
 
-  initializeScannerBridge();
+  const id = "shop_" + Date.now() + "_" + (++transportSequence);
+
+  const frame = document.createElement("iframe");
+  frame.name = "shop_transport_" + id;
+  frame.style.display = "none";
+  frame.title = "Shop inventory request";
+  document.body.appendChild(frame);
 
   return new Promise((resolve, reject) => {
-    const id = crypto.randomUUID();
-
     const timer = setTimeout(() => {
       bridgeRequests.delete(id);
+      frame.remove();
       reject(new Error(
-        "Inventory connection timed out. The Apps Script bridge may be blocked by browser iframe restrictions."
+        "Google Sheets request timed out. Check the Apps Script POST deployment."
       ));
-    }, 20000);
+    }, 30000);
 
-    bridgeRequests.set(id, {resolve, reject, timer});
+    bridgeRequests.set(id, {resolve, reject, timer, frame});
 
-    const send = () => {
-      bridgeFrame.contentWindow.postMessage({
-        type:"SHOP_SCANNER_REQUEST",
-        id,
-        idToken:scannerIdToken,
-        action,
-        ...details
-      }, "*");
-    };
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = BACKEND_URL;
+    form.target = frame.name;
+    form.style.display = "none";
 
-    if (bridgeFrame.dataset.loaded === "yes") {
-      send();
-    } else {
-      bridgeFrame.addEventListener("load", () => {
-        bridgeFrame.dataset.loaded = "yes";
-        send();
-      }, {once:true});
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "payload";
+    input.value = JSON.stringify({
+      id, action, idToken:scannerIdToken, ...details
+    });
+
+    form.appendChild(input);
+    document.body.appendChild(form);
+
+    try {
+      form.submit();
+    } catch (error) {
+      clearTimeout(timer);
+      bridgeRequests.delete(id);
+      frame.remove();
+      reject(error);
+    } finally {
+      form.remove();
     }
   });
 }
+
+// ==========================================
+// INVENTORY
+// ==========================================
 
 function normalizeInventoryProduct(p) {
   return {
@@ -413,6 +419,10 @@ async function refreshInventory() {
   }
 }
 
+// ==========================================
+// GOOGLE SIGN-IN
+// ==========================================
+
 function decodeJwtPayload(jwt) {
   const parts = jwt.split(".");
   if (parts.length !== 3) throw Error("Invalid credential");
@@ -444,7 +454,6 @@ async function onGoogleSignIn(response) {
     el("loginSection").classList.add("hidden");
     el("appSection").classList.remove("hidden");
 
-    initializeScannerBridge();
     startScanner();
     await refreshInventory();
 
@@ -495,6 +504,7 @@ async function signOut() {
 
   for (const pending of bridgeRequests.values()) {
     clearTimeout(pending.timer);
+    pending.frame.remove();
     pending.reject(new Error("Signed out."));
   }
   bridgeRequests.clear();
@@ -517,6 +527,10 @@ async function signOut() {
 
   el("loginStatus").textContent = "Signed out. Sign in again.";
 }
+
+// ==========================================
+// MODES AND PANELS
+// ==========================================
 
 function hideProductPanels() {
   ["productCard","unknownProductCard","newProductCard","labelCard"]
@@ -550,6 +564,10 @@ function setMode(mode) {
     mode==="SELL" ? "Sell mode ready." : "Add Stock mode ready.";
 }
 
+// ==========================================
+// PRODUCT DATABASE HELPERS
+// ==========================================
+
 function guessCategory(p, source="") {
   const tags = Array.isArray(p.categories_tags)
     ? p.categories_tags.join(" ") : "";
@@ -564,49 +582,35 @@ function guessCategory(p, source="") {
 
   if (has(/sanitary|menstrual|period pant|pantyliner|tampon|diaper|baby wipes/))
     return "Baby & Feminine Care";
-
   if (has(/toothpaste|toothbrush|mouthwash|oral care|dental floss/))
     return "Oral Care";
-
   if (has(/dishwash|utensil cleaner|dish soap|detergent|laundry|washing powder|fabric softener/))
     return "Laundry & Dishwashing";
-
   if (has(/toilet cleaner|floor cleaner|surface cleaner|phenyl|glass cleaner/))
     return "Home Cleaning";
-
   if (has(/hand wash|soap|shampoo|hair oil|face wash|body wash|deodorant|perfume|lotion/))
     return "Bath & Personal Care";
-
   if (has(/turmeric|haldi|chilli powder|masala|spice|jeera|cumin|coriander powder/))
     return "Masalas & Spices";
-
   if (has(/dog food|cat food|pet food/))
     return "Pet Care";
-
   if (has(/agarbatti|incense|camphor|kapoor|puja|pooja|dhoop/))
     return "Puja & Household";
-
   if (has(/notebook|pencil|eraser|stationery|pen/))
     return "Stationery & Miscellaneous";
-
   if (has(/juice|soft drink|beverage|tea|coffee|drinking water|energy drink/))
     return "Beverages";
-
   if (has(/biscuit|cookie|bhujia|namkeen|chips|snack|wafer|chocolate|candy|noodles/))
     return "Packaged Foods & Snacks";
-
   if (has(/rice|poha|atta|wheat flour|besan|maida|dal|lentil|sugar|salt|edible oil|ghee/))
     return "Groceries & Staples";
 
   if (/whisper|stayfree|sofy|pampers|huggies/.test(brand))
     return "Baby & Feminine Care";
-
   if (/colgate|pepsodent|sensodyne/.test(brand))
     return "Oral Care";
-
   if (/rin|comfort|surf excel|ariel|tide|wheel/.test(brand))
     return "Laundry & Dishwashing";
-
   if (/harpic|lizol/.test(brand))
     return "Home Cleaning";
 
@@ -679,6 +683,10 @@ function normalizeDatabaseProduct(p,db,barcode) {
     barcode
   };
 }
+
+// ==========================================
+// FIND PRODUCT
+// ==========================================
 
 function showExistingProduct(product) {
   const p = normalizeInventoryProduct(product);
@@ -840,6 +848,10 @@ async function lookupBarcode() {
   }
 }
 
+// ==========================================
+// LABEL PHOTO RECOGNITION
+// ==========================================
+
 function findBrand(text) {
   const lower = text.toLowerCase();
   return BRANDS.find(brand =>
@@ -998,6 +1010,10 @@ function useLabelResult() {
     unit:labelResult.unit||db?.unit||"Piece"
   },"label photo OCR");
 }
+
+// ==========================================
+// PRODUCT REGISTRATION
+// ==========================================
 
 function openNewProductForm() {
   if (!inventoryConnected) {
@@ -1204,6 +1220,10 @@ async function saveNewProduct() {
     button.textContent = "Confirm & Save Product to Google Sheets";
   }
 }
+
+// ==========================================
+// CART AND STOCK ENTRY — TEST ONLY
+// ==========================================
 
 function addSelectedProduct() {
   if (!selectedProduct) {
@@ -1426,6 +1446,10 @@ function completeTestStock() {
   renderIncomingStock();
 }
 
+// ==========================================
+// AUTOMATIC LIVE BARCODE SCANNER
+// ==========================================
+
 function onScanSuccess(code) {
   if (!loggedIn) return;
 
@@ -1487,6 +1511,10 @@ async function startScanner() {
     scannerStarting = false;
   }
 }
+
+// ==========================================
+// INITIALIZATION
+// ==========================================
 
 el("barcodeInput").addEventListener("keydown",event=>{
   if (event.key==="Enter") lookupBarcode();
