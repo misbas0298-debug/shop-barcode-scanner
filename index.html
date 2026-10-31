@@ -206,10 +206,32 @@ input,select{width:100%;padding:12px;border:1px solid #d6dce5;border-radius:9px;
 </div>
 
 <div id="stockSection" class="card hidden">
-<h3>Incoming Stock — Test Only</h3>
-<div id="stockItems" class="muted">No products added yet.</div>
-<div class="field"><label>Supplier Name</label><input id="supplierName"></div>
-<button class="success" onclick="completeTestStock()">Save Stock Entry (Test Only)</button>
+<h3>Incoming Stock — Google Sheets</h3>
+<p class="muted">Add one product at a time. Each saved entry will appear in the Stock In tab.</p>
+<div id="stockItems" class="muted">No product selected yet.</div>
+<div class="field">
+<label>Supplier Name *</label>
+<input id="supplierName" placeholder="Enter supplier name" maxlength="150">
+</div>
+<div class="two-fields">
+<div class="field">
+<label>Purchase Cost per Unit (₹) *</label>
+<input id="stockUnitCost" type="number" min="0" step=".01" oninput="updateStockTotal()">
+</div>
+<div class="field">
+<label>Quantity Received</label>
+<input id="stockQuantityDisplay" type="number" readonly>
+</div>
+</div>
+<div class="field">
+<label>Total Purchase Cost</label>
+<strong id="stockTotalCost">₹0.00</strong>
+</div>
+<div class="field">
+<label>Amount Paid to Supplier (₹) *</label>
+<input id="stockAmountPaid" type="number" min="0" step=".01" value="0">
+</div>
+<button id="completeStockButton" class="success" onclick="completeStockIn()">Save Stock to Google Sheets</button>
 <div id="stockMessage"></div>
 </div>
 </div>
@@ -224,10 +246,10 @@ const CLIENT_ID =
 const WORKER_URL =
 "https://my-shop-scanner-api.misbas0298.workers.dev/";
 
-const el = id => document.getElementById(id);
-const money = n => "₹" + Number(n).toFixed(2);
+const el=id=>document.getElementById(id);
+const money=n=>"₹"+Number(n).toFixed(2);
 
-const DATABASES = [
+const DATABASES=[
 {url:"https://world.openfoodfacts.org",label:"Open Food Facts"},
 {url:"https://world.openbeautyfacts.org",label:"Open Beauty Facts"},
 {url:"https://world.openproductsfacts.org",label:"Open Products Facts"}
@@ -253,9 +275,11 @@ let inventoryConnected=false;
 let productSaveInProgress=false;
 let saleSaveInProgress=false;
 let saleNeedsReview=false;
+let stockSaveInProgress=false;
+let stockNeedsReview=false;
 
-async function scannerApi(action,details={}) {
-if(!scannerIdToken) throw new Error("Please sign in again.");
+async function scannerApi(action,details={}){
+if(!scannerIdToken)throw new Error("Please sign in again.");
 const response=await fetch(WORKER_URL,{
 method:"POST",
 headers:{"Content-Type":"application/json"},
@@ -297,7 +321,7 @@ inventoryConnected=true;
 el("inventoryStatus").textContent=
 "Google Sheets connected • "+inventoryProducts.length+" products loaded.";
 el("connectionNotice").textContent=
-"Google Sheets connected. Product registration and Sales are enabled. Add Stock remains test-only.";
+"Google Sheets connected. Product registration, Sales and Add Stock are enabled.";
 el("connectionNotice").style.background="#e8f7ee";
 el("connectionNotice").style.color="#12633b";
 }catch(error){
@@ -353,8 +377,8 @@ el("loginStatus").textContent="Use your authorized Google account.";
 }
 
 async function signOut(){
-if(saleSaveInProgress||saleNeedsReview){
-alert("Finish checking the pending sale before signing out.");
+if(saleSaveInProgress||saleNeedsReview||stockSaveInProgress||stockNeedsReview){
+alert("Resolve any pending transaction before signing out.");
 return;
 }
 loggedIn=false;
@@ -390,8 +414,8 @@ onlineProductBarcode="";
 
 function setMode(mode){
 if(!["SELL","STOCK"].includes(mode))return;
-if(saleSaveInProgress||saleNeedsReview){
-alert("Resolve the pending sale before switching modes.");
+if(saleSaveInProgress||saleNeedsReview||stockSaveInProgress||stockNeedsReview){
+alert("Resolve the pending transaction before switching modes.");
 return;
 }
 cancelPendingLookup();
@@ -415,7 +439,7 @@ el("productExtra").textContent=[p.brand,p.packSize,p.category].filter(Boolean).j
 el("productPrice").textContent=money(p.price);
 el("productStock").textContent=p.stock+" "+p.unit;
 el("quantityInput").value="1";
-el("addProductBtn").textContent=currentMode==="SELL"?"Add to Bill":"Add Incoming Stock";
+el("addProductBtn").textContent=currentMode==="SELL"?"Add to Bill":"Select Incoming Stock";
 el("productCard").classList.remove("hidden");
 el("status").textContent="Product found in shop inventory.";
 }
@@ -657,7 +681,7 @@ button.textContent="Save Product";
 }
 
 function addSelectedProduct(){
-if(!selectedProduct||saleSaveInProgress||saleNeedsReview)return;
+if(!selectedProduct||saleSaveInProgress||saleNeedsReview||stockSaveInProgress||stockNeedsReview)return;
 const quantity=Number(el("quantityInput").value);
 if(!Number.isSafeInteger(quantity)||quantity<=0){
 alert("Enter a valid quantity.");
@@ -675,15 +699,18 @@ if(existing)existing.quantity+=quantity;
 else cart.push({...product,quantity});
 renderCart();
 }else{
-const existing=incomingStock.find(item=>item.id===product.id);
-if(existing)existing.quantity+=quantity;
-else incomingStock.push({...product,quantity});
+incomingStock=[{...product,quantity}];
+el("stockUnitCost").value=Number(product.cost).toFixed(2);
+el("stockAmountPaid").value="0";
 renderIncomingStock();
+updateStockTotal();
 }
 selectedProduct=null;
 hideProductPanels();
 el("barcodeInput").value="";
-el("status").textContent="Product added. Scan next barcode.";
+el("status").textContent=currentMode==="SELL"?
+"Product added to bill. Scan next barcode.":
+"Product selected. Complete purchase details below.";
 }
 
 function changeCartQuantity(id,change){
@@ -811,49 +838,146 @@ button.textContent=saleNeedsReview?
 }
 }
 
+// INCOMING STOCK — ONE PRODUCT PER SAVE
+
 function renderIncomingStock(){
 const box=el("stockItems");
 box.replaceChildren();
-if(!incomingStock.length){
-box.textContent="No products added yet.";
+const item=incomingStock[0];
+if(!item){
+box.textContent="No product selected yet. Scan a product above.";
+el("stockQuantityDisplay").value="";
+el("stockTotalCost").textContent=money(0);
 return;
 }
-incomingStock.forEach(item=>{
-const div=document.createElement("div");
-div.className="cart-item";
-const row=document.createElement("div");
-row.className="row";
-const label=document.createElement("span");
-label.textContent=item.name+" — "+item.quantity+" "+item.unit;
+const name=document.createElement("strong");
+name.textContent=item.name+" — "+item.quantity+" "+item.unit;
+const detail=document.createElement("p");
+detail.className="muted";
+detail.textContent="Barcode: "+item.barcode+
+" • Current Stock: "+item.stock+
+" • After Receiving: "+(item.stock+item.quantity);
 const remove=document.createElement("button");
 remove.className="secondary small";
 remove.textContent="Remove";
+remove.disabled=stockSaveInProgress||stockNeedsReview;
 remove.onclick=()=>{
-incomingStock=incomingStock.filter(x=>x.id!==item.id);
+incomingStock=[];
 renderIncomingStock();
 };
-row.append(label,remove);
-div.append(row);
-box.append(div);
-});
+box.append(name,detail,remove);
+el("stockQuantityDisplay").value=item.quantity;
 }
 
-function completeTestStock(){
-if(!incomingStock.length){
-alert("Add at least one product.");
+function updateStockTotal(){
+const item=incomingStock[0];
+const cost=Number(el("stockUnitCost").value);
+const total=item&&Number.isFinite(cost)&&cost>=0?
+Math.round(item.quantity*cost*100)/100:0;
+el("stockTotalCost").textContent=money(total);
+}
+
+async function completeStockIn(){
+if(stockSaveInProgress||stockNeedsReview){
+if(stockNeedsReview)
+alert("Check the Stock In sheet before retrying to avoid duplicate stock.");
+return;
+}
+if(!loggedIn||!inventoryConnected){
+alert("Please sign in and connect Google Sheets.");
+return;
+}
+const item=incomingStock[0];
+if(!item){
+alert("Scan and select a product first.");
 return;
 }
 const supplier=el("supplierName").value.trim();
+const costText=el("stockUnitCost").value.trim();
+const paidText=el("stockAmountPaid").value.trim();
+const purchaseCostPerUnit=Number(costText);
+const amountPaid=Number(paidText);
+const totalCost=Math.round(item.quantity*purchaseCostPerUnit*100)/100;
+
 if(!supplier){
 alert("Enter supplier name.");
 return;
 }
+if(!costText||!Number.isFinite(purchaseCostPerUnit)||purchaseCostPerUnit<0){
+alert("Enter a valid purchase cost per unit.");
+return;
+}
+if(!paidText||!Number.isFinite(amountPaid)||amountPaid<0||
+amountPaid>totalCost){
+alert("Amount paid must be between ₹0 and the total purchase cost.");
+return;
+}
+if(!confirm(
+"Confirm incoming stock:\n\n"+
+"Product: "+item.name+
+"\nQuantity: "+item.quantity+
+"\nSupplier: "+supplier+
+"\nTotal Cost: "+money(totalCost)+
+"\nAmount Paid: "+money(amountPaid)+
+"\n\nSave to Google Sheets?"
+))return;
+
+stockSaveInProgress=true;
+const button=el("completeStockButton");
+button.disabled=true;
+button.textContent="Saving Stock...";
 el("stockMessage").className="message";
-el("stockMessage").textContent=
-"Test stock entry completed for "+supplier+
-". Nothing was saved to Google Sheets.";
+el("stockMessage").textContent="Saving incoming stock to Google Sheets...";
+let confirmed=false;
+
+try{
+const result=await scannerApi("createStockIn",{
+stockIn:{
+barcode:item.barcode,
+quantity:item.quantity,
+supplier,
+purchaseCostPerUnit,
+amountPaid
+}
+});
+if(!result.stockIn?.purchaseId)
+throw new Error("Server did not confirm a Purchase ID.");
+confirmed=true;
+const saved=result.stockIn;
 incomingStock=[];
 renderIncomingStock();
+el("stockUnitCost").value="";
+el("stockAmountPaid").value="0";
+el("supplierName").value="";
+el("stockMessage").textContent=
+"Stock saved! Purchase ID: "+saved.purchaseId+
+" • Quantity Added: "+saved.quantity;
+await refreshInventory();
+alert(
+"Incoming stock saved successfully!\n\n"+
+"Purchase ID: "+saved.purchaseId+
+"\nProduct: "+saved.productName+
+"\nQuantity Added: "+saved.quantity+
+"\nTotal Cost: "+money(saved.totalCost)
+);
+}catch(error){
+if(!confirmed){
+stockNeedsReview=true;
+el("stockMessage").textContent=
+"Stock save not confirmed: "+error.message+
+". Check Stock In before trying again.";
+alert(el("stockMessage").textContent);
+}else{
+el("stockMessage").textContent=
+"Stock saved, but inventory refresh failed: "+error.message;
+}
+}finally{
+stockSaveInProgress=false;
+button.disabled=stockNeedsReview;
+button.textContent=stockNeedsReview?
+"Check Stock In Before Retrying":
+"Save Stock to Google Sheets";
+}
 }
 
 function onScanSuccess(code){
@@ -913,6 +1037,7 @@ try{old.clear();}catch(_){}
 el("barcodeInput").addEventListener("keydown",event=>{
 if(event.key==="Enter")lookupBarcode();
 });
+
 renderCart();
 renderIncomingStock();
 window.addEventListener("load",initializeGoogleSignIn);
